@@ -32,6 +32,26 @@
     </LinearLayout>
 
     <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Appareils détectés (choisis ton vélo = signal le plus fort) :"
+        android:textSize="12sp"
+        android:paddingTop="6dp"
+        android:paddingBottom="2dp" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#11000000">
+        <LinearLayout
+            android:id="@+id/deviceList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </ScrollView>
+
+    <TextView
         android:id="@+id/logView"
         android:layout_width="match_parent"
         android:layout_height="0dp"

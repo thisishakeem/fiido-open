@@ -12,91 +12,75 @@ import android.os.Looper
 import java.util.UUID
 
 /**
- * Explorateur BLE générique pour le vélo Fiido.
- * But du MVP : se connecter, s'abonner à TOUTES les caractéristiques "notify",
- * journaliser chaque trame reçue en hexa, et permettre d'écrire une trame hexa
- * sur une caractéristique "write" — afin de reconstituer le protocole en live.
- *
- * Deux profils candidats repérés dans l'appli officielle :
- *   - série  : service 00010203-0405-0607-0809-0a0b0c0dffe0 (notify ffe1 / write ffe2)
- *   - propre : service c3e6fea0-... (chars c3e6fea1 / c3e6fea2)
- * On ne présume rien : on énumère tout ce que le vélo expose.
+ * Explorateur BLE pour le vélo Fiido.
+ * v0.2 : liste TOUS les appareils détectés (nom + MAC + RSSI) et laisse
+ * l'utilisateur choisir lequel connecter — plus de connexion automatique.
+ * Une fois connecté : abonnement à toutes les caractéristiques "notify",
+ * journal des trames en hexa, et écriture de trames de test.
  */
 class BleClient(
     private val context: Context,
     private val log: (String) -> Unit,
     private val onState: (String) -> Unit,
+    private val onDevices: (List<DeviceEntry>) -> Unit,
     private val onWritable: (List<CharRef>) -> Unit,
 ) {
+    data class DeviceEntry(val device: BluetoothDevice, val name: String, val rssi: Int)
     data class CharRef(val service: UUID, val characteristic: UUID) {
-        override fun toString() = "${short(service)} / ${short(characteristic)}"
-        companion object {
-            fun short(u: UUID): String {
-                val s = u.toString()
-                // affiche les 4 hexas distinctifs quand c'est une base 128 bits connue
-                return s
-            }
-        }
+        override fun toString() = "$service / $characteristic"
     }
 
     private val adapter: BluetoothAdapter? =
         (context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager)?.adapter
+    private val scanner get() = adapter?.bluetoothLeScanner
 
     private var gatt: BluetoothGatt? = null
     private val main = Handler(Looper.getMainLooper())
     private val writable = mutableListOf<CharRef>()
+    private val found = LinkedHashMap<String, DeviceEntry>()
+    private var scanning = false
 
     val cccd: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
 
     fun isBluetoothOn(): Boolean = adapter?.isEnabled == true
 
-    // ---------- SCAN ----------
-    private val scanner get() = adapter?.bluetoothLeScanner
-
     private val scanCallback = object : ScanCallback() {
         @SuppressLint("MissingPermission")
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             val dev = result.device
-            val name = result.scanRecord?.deviceName ?: dev.name ?: "?"
-            if (looksLikeBike(name)) {
-                log("Vélo trouvé: $name  [${dev.address}]  rssi=${result.rssi}")
-                stopScan()
-                connect(dev)
-            }
+            val name = result.scanRecord?.deviceName ?: runCatching { dev.name }.getOrNull() ?: "(sans nom)"
+            found[dev.address] = DeviceEntry(dev, name, result.rssi)
+            onDevices(found.values.sortedByDescending { it.rssi })
         }
-        override fun onScanFailed(errorCode: Int) {
-            onState("Échec du scan ($errorCode)")
-        }
-    }
-
-    private fun looksLikeBike(name: String): Boolean {
-        val n = name.lowercase()
-        return listOf("fiido", "meter", "k1", "c11", "c1", "d", "bike").any { n.contains(it) } ||
-            name.isNotBlank()  // en MVP on liste tout appareil nommé ; on affinera
+        override fun onScanFailed(errorCode: Int) { onState("Échec du scan ($errorCode)") }
     }
 
     @SuppressLint("MissingPermission")
     fun startScan() {
         if (adapter == null) { onState("Bluetooth indisponible"); return }
         if (!isBluetoothOn()) { onState("Active le Bluetooth"); return }
-        onState("Scan en cours…")
-        log("--- scan démarré ---")
+        found.clear(); onDevices(emptyList())
+        scanning = true
+        onState("Scan… approche-toi du vélo")
+        log("--- scan démarré (choisis l'appareil au signal le plus fort) ---")
         val settings = ScanSettings.Builder()
             .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
             .build()
         scanner?.startScan(null, settings, scanCallback)
-        main.postDelayed({ stopScan() }, 15000)
+        main.postDelayed({ if (scanning) { stopScan(); onState("Scan terminé — appuie à nouveau sur Scan si besoin") } }, 25000)
     }
 
     @SuppressLint("MissingPermission")
     fun stopScan() {
+        scanning = false
         try { scanner?.stopScan(scanCallback) } catch (_: Exception) {}
     }
 
-    // ---------- CONNEXION ----------
     @SuppressLint("MissingPermission")
     fun connect(device: BluetoothDevice) {
-        onState("Connexion…")
+        stopScan()
+        onState("Connexion à ${device.address}…")
+        log("--- connexion à ${device.address} ---")
         gatt = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
             device.connectGatt(context, false, gattCallback, BluetoothDevice.TRANSPORT_LE)
         else
@@ -118,6 +102,7 @@ class BleClient(
                 main.post { g.discoverServices() }
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 onState("Déconnecté (status=$status)")
+                log("--- déconnecté (status=$status) ---")
             }
         }
 
@@ -139,13 +124,11 @@ class BleClient(
                     }
                     log("   • ${c.uuid}  [$flags]")
                     if (p and (BluetoothGattCharacteristic.PROPERTY_WRITE or
-                            BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE) != 0) {
+                            BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE) != 0)
                         writable.add(CharRef(svc.uuid, c.uuid))
-                    }
                     if (p and (BluetoothGattCharacteristic.PROPERTY_NOTIFY or
-                            BluetoothGattCharacteristic.PROPERTY_INDICATE) != 0) {
+                            BluetoothGattCharacteristic.PROPERTY_INDICATE) != 0)
                         notifyList.add(c)
-                    }
                 }
             }
             onWritable(writable.toList())
@@ -174,7 +157,7 @@ class BleClient(
     private fun enableNext(g: BluetoothGatt, list: List<BluetoothGattCharacteristic>, i: Int) {
         if (i >= list.size) {
             onState("Prêt — ${list.size} notif. actives")
-            log("--- abonnements terminés ---")
+            log("--- abonnements terminés, écoute en cours ---")
             return
         }
         val c = list[i]
@@ -183,15 +166,11 @@ class BleClient(
         if (d != null) {
             val v = if (c.properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY != 0)
                 BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-            else
-                BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
+            else BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 g.writeDescriptor(d, v)
             } else {
-                @Suppress("DEPRECATION")
-                d.value = v
-                @Suppress("DEPRECATION")
-                g.writeDescriptor(d)
+                @Suppress("DEPRECATION") run { d.value = v; g.writeDescriptor(d) }
             }
             log("abonné: ${c.uuid}")
         }
@@ -200,11 +179,10 @@ class BleClient(
 
     private fun handleIncoming(uuid: UUID, value: ByteArray) {
         val hex = value.joinToString(" ") { "%02X".format(it) }
-        log("→ ${shortUuid(uuid)}  [${value.size}]  $hex")
+        log("→ $uuid  [${value.size}]  $hex")
         FrameDecoder.tryDecode(value)?.let { log("     ⤷ $it") }
     }
 
-    // ---------- ÉCRITURE ----------
     @SuppressLint("MissingPermission")
     fun write(ref: CharRef, bytes: ByteArray): Boolean {
         val g = gatt ?: return false
@@ -214,19 +192,11 @@ class BleClient(
             BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
         else BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
         val hex = bytes.joinToString(" ") { "%02X".format(it) }
-        log("TX ${shortUuid(ref.characteristic)}  $hex")
+        log("TX ${ref.characteristic}  $hex")
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             g.writeCharacteristic(c, bytes, type) == BluetoothGatt.GATT_SUCCESS
         } else {
-            @Suppress("DEPRECATION") run {
-                c.writeType = type
-                c.value = bytes
-                g.writeCharacteristic(c)
-            }
+            @Suppress("DEPRECATION") run { c.writeType = type; c.value = bytes; g.writeCharacteristic(c) }
         }
     }
-
-    fun writableChars(): List<CharRef> = writable.toList()
-
-    private fun shortUuid(u: UUID): String = u.toString()
 }
