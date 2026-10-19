@@ -1,0 +1,11 @@
+<resources>
+    <color name="bg">#FF0E1524</color>
+    <color name="surface">#FF171F30</color>
+    <color name="surfaceHi">#FF1F273A</color>
+    <color name="primary">#FF9FCAFF</color>
+    <color name="primaryCont">#FF1D4B78</color>
+    <color name="onPrimaryCont">#FFD2E4FF</color>
+    <color name="txt">#FFE3E7EF</color>
+    <color name="txtDim">#FFAEB6C6</color>
+    <color name="green">#FF8FF0B4</color>
+</resources>

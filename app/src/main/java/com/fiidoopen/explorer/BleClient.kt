@@ -24,8 +24,11 @@ class BleClient(
     private val onState: (String) -> Unit,
     private val onDevices: (List<DeviceEntry>) -> Unit,
     private val onWritable: (List<CharRef>) -> Unit,
+    private val onStatus: (Status) -> Unit = {},
 ) {
     data class DeviceEntry(val device: BluetoothDevice, val name: String, val rssi: Int)
+    /** Télémétrie décodée depuis la trame d'état (registre 0x26). */
+    data class Status(val voltage: Double, val batteryPct: Int, val assist: Int, val speedRaw: Int)
     data class CharRef(val service: UUID, val characteristic: UUID) {
         override fun toString() = "$service / $characteristic"
     }
@@ -208,6 +211,20 @@ class BleClient(
         val hex = value.joinToString(" ") { "%02X".format(it) }
         log("→ $uuid  [${value.size}]  $hex")
         FrameDecoder.tryDecode(value)?.let { log("     ⤷ $it") }
+        parseStatus(value)
+    }
+
+    private fun parseStatus(b: ByteArray) {
+        // Trame d'état : 46 64 AA 26 1C <data...> <xor>
+        if (b.size < 16) return
+        if ((b[0].toInt() and 0xFF) != 0x46 || (b[1].toInt() and 0xFF) != 0x64) return
+        if ((b[2].toInt() and 0xFF) != 0xAA || (b[3].toInt() and 0xFF) != 0x26) return
+        val volt = (((b[13].toInt() and 0xFF) shl 8) or (b[14].toInt() and 0xFF)) / 100.0  // ex 0x0F50 -> 39.20 V
+        val assist = b[15].toInt() and 0xFF
+        val speed = b[12].toInt() and 0xFF
+        // % batterie estimé depuis la tension (pack 36 V / 10S : ~33 V vide, ~42 V plein)
+        val pct = (((volt - 33.0) / (42.0 - 33.0)) * 100.0).coerceIn(0.0, 100.0).toInt()
+        onStatus(Status(volt, pct, assist, speed))
     }
 
     fun startPolling() {

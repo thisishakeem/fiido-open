@@ -7,8 +7,8 @@
         android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"
         android:maxSdkVersion="30" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"
-        android:maxSdkVersion="30" />
+    <!-- GPS pour la géoloc du vélo garé (toutes versions) -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <!-- BLE : Android 12+ -->
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
