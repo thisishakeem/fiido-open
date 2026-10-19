@@ -41,6 +41,28 @@ class BleClient(
     private var scanning = false
 
     val cccd: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
+    private val ffe2: UUID = UUID.fromString("00010203-0405-0607-0809-0a0b0c0dffe2")
+    private var writeRef: CharRef? = null
+    private var polling = false
+    private var pollIndex = 0
+
+    // Requêtes de lecture capturées depuis l'appli officielle (lecture seule, sûres).
+    private val pollFrames = listOf(
+        byteArrayOf(0x46, 0x64, 0x55, 0x26, 0x1C, 0x4D),  // état principal (batterie/vitesse/assist)
+        byteArrayOf(0x46, 0x64, 0x55, 0x0C, 0xC8.toByte(), 0xB3.toByte()),
+        byteArrayOf(0x46, 0x64, 0x55, 0x0D, 0x60, 0x1A),
+        byteArrayOf(0x46, 0x64, 0x55, 0x0D, 0x7B, 0x01),
+        byteArrayOf(0x46, 0x64, 0x55, 0x1C, 0x00, 0x6B),
+        byteArrayOf(0x46, 0x64, 0x55, 0x04, 0x53, 0x20),
+    )
+
+    /** Construit une trame Fiido : 0x46 0x64 + payload + XOR de tout ce qui précède. */
+    fun buildFrame(payload: ByteArray): ByteArray {
+        val body = byteArrayOf(0x46, 0x64) + payload
+        var x = 0
+        for (b in body) x = x xor (b.toInt() and 0xFF)
+        return body + byteArrayOf(x.toByte())
+    }
 
     fun isBluetoothOn(): Boolean = adapter?.isEnabled == true
 
@@ -89,6 +111,7 @@ class BleClient(
 
     @SuppressLint("MissingPermission")
     fun disconnect() {
+        stopPolling()
         try { gatt?.disconnect(); gatt?.close() } catch (_: Exception) {}
         gatt = null
         onState("Déconnecté")
@@ -124,8 +147,11 @@ class BleClient(
                     }
                     log("   • ${c.uuid}  [$flags]")
                     if (p and (BluetoothGattCharacteristic.PROPERTY_WRITE or
-                            BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE) != 0)
-                        writable.add(CharRef(svc.uuid, c.uuid))
+                            BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE) != 0) {
+                        val ref = CharRef(svc.uuid, c.uuid)
+                        writable.add(ref)
+                        if (c.uuid == ffe2) writeRef = ref
+                    }
                     if (p and (BluetoothGattCharacteristic.PROPERTY_NOTIFY or
                             BluetoothGattCharacteristic.PROPERTY_INDICATE) != 0)
                         notifyList.add(c)
@@ -156,8 +182,9 @@ class BleClient(
     @SuppressLint("MissingPermission")
     private fun enableNext(g: BluetoothGatt, list: List<BluetoothGattCharacteristic>, i: Int) {
         if (i >= list.size) {
-            onState("Prêt — ${list.size} notif. actives")
-            log("--- abonnements terminés, écoute en cours ---")
+            onState("Prêt — interrogation du vélo…")
+            log("--- abonnements OK ; démarrage de l'interrogation (ffe2) ---")
+            startPolling()
             return
         }
         val c = list[i]
@@ -181,6 +208,38 @@ class BleClient(
         val hex = value.joinToString(" ") { "%02X".format(it) }
         log("→ $uuid  [${value.size}]  $hex")
         FrameDecoder.tryDecode(value)?.let { log("     ⤷ $it") }
+    }
+
+    fun startPolling() {
+        if (polling) return
+        polling = true
+        pollTick()
+    }
+    fun stopPolling() { polling = false }
+
+    private fun pollTick() {
+        if (!polling) return
+        val ref = writeRef
+        if (ref != null) {
+            val frame = pollFrames[pollIndex % pollFrames.size]
+            pollIndex++
+            writeSilent(ref, frame)
+        }
+        main.postDelayed({ pollTick() }, 350)
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun writeSilent(ref: CharRef, bytes: ByteArray) {
+        val g = gatt ?: return
+        val c = g.getService(ref.service)?.getCharacteristic(ref.characteristic) ?: return
+        val type = if (c.properties and BluetoothGattCharacteristic.PROPERTY_WRITE != 0)
+            BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+        else BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            g.writeCharacteristic(c, bytes, type)
+        } else {
+            @Suppress("DEPRECATION") run { c.writeType = type; c.value = bytes; g.writeCharacteristic(c) }
+        }
     }
 
     @SuppressLint("MissingPermission")
