@@ -2,38 +2,21 @@ package com.fiidoopen.explorer
 
 import android.Manifest
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.location.LocationManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.text.method.ScrollingMovementMethod
-import android.view.Gravity
-import android.view.View
-import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.LinearLayout
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import com.fiidoopen.explorer.databinding.ActivityMainBinding
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var b: ActivityMainBinding
     private lateinit var ble: BleClient
-    private val logBuf = StringBuilder()
-    private val ts get() = SimpleDateFormat("HH:mm:ss.SSS", Locale.US).format(Date())
-    private var writable: List<BleClient.CharRef> = emptyList()
     private var wasConnected = false
-
     private var autoConnectAfterPerm = false
 
     private val permLauncher =
@@ -41,7 +24,7 @@ class MainActivity : AppCompatActivity() {
             val btOk = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
                 res[Manifest.permission.BLUETOOTH_SCAN] == true && res[Manifest.permission.BLUETOOTH_CONNECT] == true
             else true
-            if (!btOk) { appendLog("Permissions Bluetooth refusées."); return@registerForActivityResult }
+            if (!btOk) { BikeHub.postState("Permissions Bluetooth refusées"); return@registerForActivityResult }
             if (autoConnectAfterPerm) { autoConnectAfterPerm = false; connectKnownNow() } else ble.startScan()
         }
 
@@ -49,53 +32,51 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         b = ActivityMainBinding.inflate(layoutInflater)
         setContentView(b.root)
-        b.logView.movementMethod = ScrollingMovementMethod()
 
         ble = BleClient(
-            context = this,
-            log = { line -> runOnUiThread { appendLog(line) } },
-            onState = { s -> runOnUiThread { b.status.text = s } },
-            onDevices = { list -> runOnUiThread { renderDevices(list) } },
-            onWritable = { list ->
-                runOnUiThread {
-                    writable = list
-                    b.charSpinner.adapter = ArrayAdapter(
-                        this, android.R.layout.simple_spinner_dropdown_item, list.map { it.toString() }
-                    )
-                }
-            },
-            onStatus = { st -> runOnUiThread { showStatus(st) } }
+            context = applicationContext,
+            log = { line -> BikeHub.appendLog(line) },
+            onState = { s -> onBleState(s) },
+            onDevices = { },
+            onWritable = { },
+            onStatus = { st ->
+                wasConnected = true
+                BikeHub.postConnected(true)
+                BikeHub.postStatus(st)
+            }
         )
+        BikeHub.init(ble)
 
-        buildAssistButtons()
-        b.scanBtn.setOnClickListener { tryAutoConnect() }   // « Reconnecter »
-        b.disconnectBtn.setOnClickListener { captureParked(); ble.disconnect() }
-        b.sendBtn.setOnClickListener { sendHex() }
-        b.shareBtn.setOnClickListener { shareLog() }
-        b.scanRegBtn.setOnClickListener { ble.scanRegisters() }
-        b.cmd2708.setOnClickListener { ble.setReg(0x27, 0x08); appendLog("test → 0x27 = 0x08") }
-        b.cmd2780.setOnClickListener { ble.setReg(0x27, 0x80); appendLog("test → 0x27 = 0x80") }
-        b.cmd2700.setOnClickListener { ble.setReg(0x27, 0x00); appendLog("test → 0x27 = 0x00") }
-        b.cmd2b40.setOnClickListener { ble.setReg(0x2B, 0x40); appendLog("test → 0x2B = 0x40") }
-        b.cmd2b00.setOnClickListener { ble.setReg(0x2B, 0x00); appendLog("test → 0x2B = 0x00") }
-        b.mapBtn.setOnClickListener { openMap() }
-        b.toggleLog.setOnClickListener {
-            b.logBox.visibility = if (b.logBox.visibility == View.GONE) View.VISIBLE else View.GONE
-        }
-
-        showParkedFromPrefs()
-        appendLog("Fiido Open ${BuildStamp.VERSION}")
-
-        // Vélo mémorisé → connexion directe à l'ouverture
         ble.knownBike = getSharedPreferences("fiido", Context.MODE_PRIVATE)
-            .getString("bikeAddress", "D7:39:0E:7E:FB:0E") // ton Fiido C11 par défaut
-        if (ble.knownBike != null) {
-            b.status.text = "Connexion à ton vélo…"
-            tryAutoConnect()
+            .getString("bikeAddress", "D7:39:0E:7E:FB:0E")
+
+        b.bottomNav.setOnItemSelectedListener { item ->
+            val f: Fragment = when (item.itemId) {
+                R.id.nav_bike -> HomeFragment()
+                R.id.nav_rides -> TrajetsFragment()
+                R.id.nav_map -> CarteFragment()
+                R.id.nav_settings -> ReglagesFragment()
+                else -> HomeFragment()
+            }
+            supportFragmentManager.beginTransaction().replace(R.id.container, f).commit()
+            true
+        }
+        if (savedInstanceState == null) b.bottomNav.selectedItemId = R.id.nav_bike
+
+        BikeHub.appendLog("Fiido Open ${BuildStamp.VERSION}")
+        tryAutoConnect()
+    }
+
+    private fun onBleState(s: String) {
+        BikeHub.postState(s)
+        if (s.startsWith("Déconnecté")) {
+            if (wasConnected) captureParked()
+            wasConnected = false
+            BikeHub.postConnected(false)
         }
     }
 
-    private fun tryAutoConnect() {
+    fun tryAutoConnect() {
         val connectPerm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
             Manifest.permission.BLUETOOTH_CONNECT else Manifest.permission.ACCESS_FINE_LOCATION
         if (ContextCompat.checkSelfPermission(this, connectPerm) == PackageManager.PERMISSION_GRANTED) {
@@ -108,70 +89,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun connectKnownNow() {
         val addr = ble.knownBike ?: return
-        if (!ble.isBluetoothOn()) { appendLog("Active le Bluetooth."); return }
-        if (!ble.connectKnown(addr)) { appendLog("Connexion directe impossible — utilise Scan."); ble.startScan() }
-    }
-
-    private var assistButtons = listOf<Button>()
-
-    private fun buildAssistButtons() {
-        assistButtons = (0..5).map { lvl ->
-            Button(this).apply {
-                text = lvl.toString()
-                isAllCaps = false
-                setOnClickListener {
-                    if (ble.setAssist(lvl)) appendLog("→ assistance réglée sur $lvl")
-                    else appendLog("Assistance : connecte d'abord le vélo.")
-                }
-                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-                    .apply { marginEnd = 6 }
-            }
-        }
-        b.assistRow.removeAllViews()
-        assistButtons.forEach { b.assistRow.addView(it) }
-    }
-
-    private fun highlightAssist(level: Int) {
-        assistButtons.forEachIndexed { i, btn ->
-            if (i == level) { btn.setBackgroundColor(Color.parseColor("#9FCAFF")); btn.setTextColor(Color.parseColor("#00325A")) }
-            else { btn.setBackgroundColor(Color.parseColor("#1F273A")); btn.setTextColor(Color.parseColor("#E3E7EF")) }
-        }
-    }
-
-    private fun showStatus(st: BleClient.Status) {
-        wasConnected = true
-        b.battPct.text = "${st.batteryPct} %"
-        b.speed.text = "${st.speedRaw}"
-        b.assist.text = "${st.assist}"
-        highlightAssist(st.assist)
-    }
-
-    private fun renderDevices(list: List<BleClient.DeviceEntry>) {
-        b.deviceList.removeAllViews()
-        for (d in list) {
-            val btn = Button(this)
-            val bars = when {
-                d.rssi >= -55 -> "proche"
-                d.rssi >= -70 -> "moyen"
-                d.rssi >= -85 -> "loin"
-                else -> "très loin"
-            }
-            btn.text = "${d.name}\n${d.device.address}   ${d.rssi} dBm   $bars"
-            btn.isAllCaps = false
-            btn.gravity = Gravity.START or Gravity.CENTER_VERTICAL
-            if (d.rssi >= -60) btn.setTextColor(Color.parseColor("#8FF0B4"))
-            btn.layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            btn.setOnClickListener {
-                // mémorise ce vélo pour les prochaines connexions directes
-                getSharedPreferences("fiido", Context.MODE_PRIVATE).edit()
-                    .putString("bikeAddress", d.device.address).apply()
-                ble.knownBike = d.device.address
-                b.deviceList.removeAllViews(); ble.connect(d.device)
-            }
-            b.deviceList.addView(btn)
-        }
+        if (!ble.isBluetoothOn()) { BikeHub.postState("Active le Bluetooth"); return }
+        if (!ble.connectKnown(addr)) { BikeHub.postState("Connexion impossible — relance"); ble.startScan() }
     }
 
     private fun neededPerms(): Array<String> {
@@ -179,22 +98,11 @@ class MainActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             l.add(Manifest.permission.BLUETOOTH_SCAN); l.add(Manifest.permission.BLUETOOTH_CONNECT)
         }
-        l.add(Manifest.permission.ACCESS_FINE_LOCATION) // pour géoloc vélo garé
+        l.add(Manifest.permission.ACCESS_FINE_LOCATION)
         return l.toTypedArray()
     }
 
-    private fun ensurePermsThenScan() {
-        val missing = neededPerms().filter {
-            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
-        }
-        if (missing.isEmpty()) {
-            if (!ble.isBluetoothOn()) appendLog("Active le Bluetooth puis relance le scan.") else ble.startScan()
-        } else permLauncher.launch(missing.toTypedArray())
-    }
-
-    // ---- Vélo garé (GPS côté téléphone) ----
     private fun captureParked() {
-        if (!wasConnected) return
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
             != PackageManager.PERMISSION_GRANTED) return
         try {
@@ -202,66 +110,17 @@ class MainActivity : AppCompatActivity() {
             val loc = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER)
                 ?: lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
             if (loc != null) {
-                val sp = getSharedPreferences("fiido", Context.MODE_PRIVATE)
-                sp.edit().putString("lat", loc.latitude.toString())
+                getSharedPreferences("fiido", Context.MODE_PRIVATE).edit()
+                    .putString("lat", loc.latitude.toString())
                     .putString("lon", loc.longitude.toString())
                     .putLong("t", System.currentTimeMillis()).apply()
-                showParkedFromPrefs()
-                appendLog("Position du vélo enregistrée.")
+                BikeHub.appendLog("Position du vélo enregistrée.")
             }
-        } catch (e: Exception) { appendLog("GPS indisponible: ${e.message}") }
+        } catch (e: Exception) { BikeHub.appendLog("GPS indisponible: ${e.message}") }
     }
 
-    private fun showParkedFromPrefs() {
-        val sp = getSharedPreferences("fiido", Context.MODE_PRIVATE)
-        val lat = sp.getString("lat", null); val lon = sp.getString("lon", null)
-        if (lat != null && lon != null) {
-            val t = sp.getLong("t", 0)
-            val when_ = if (t > 0) SimpleDateFormat("dd/MM HH:mm", Locale.FRANCE).format(Date(t)) else ""
-            b.parked.text = "$lat, $lon\nEnregistré le $when_"
-        }
+    override fun onDestroy() {
+        super.onDestroy()
+        ble.disconnect()
     }
-
-    private fun openMap() {
-        val sp = getSharedPreferences("fiido", Context.MODE_PRIVATE)
-        val lat = sp.getString("lat", null); val lon = sp.getString("lon", null)
-        if (lat == null || lon == null) { appendLog("Aucune position enregistrée."); return }
-        try {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("geo:$lat,$lon?q=$lat,$lon(Vélo)")))
-        } catch (e: Exception) { appendLog("Pas d'appli carte: ${e.message}") }
-    }
-
-    private fun sendHex() {
-        val bytes = parseHex(b.hexInput.text.toString().trim())
-        if (bytes == null) { appendLog("Hex invalide."); return }
-        val pos = b.charSpinner.selectedItemPosition
-        if (pos !in writable.indices) { appendLog("Connecte d'abord."); return }
-        if (!ble.write(writable[pos], bytes)) appendLog("Échec écriture.")
-    }
-
-    private fun parseHex(s: String): ByteArray? {
-        val c = s.replace(",", " ").replace("0x", " ", true).split(Regex("\\s+")).filter { it.isNotBlank() }
-        return try { ByteArray(c.size) { c[it].toInt(16).toByte() } } catch (e: Exception) { null }
-    }
-
-    private fun appendLog(line: String) {
-        logBuf.append(ts).append("  ").append(line).append('\n')
-        b.logView.text = logBuf
-        val scroll = b.logView.layout?.getLineTop(b.logView.lineCount) ?: 0
-        val pad = scroll - b.logView.height + b.logView.paddingBottom
-        if (pad > 0) b.logView.scrollTo(0, pad)
-    }
-
-    private fun shareLog() {
-        try {
-            val f = File(cacheDir, "fiido_ble_log.txt"); f.writeText(logBuf.toString())
-            val uri = androidx.core.content.FileProvider.getUriForFile(this, "$packageName.fileprovider", f)
-            startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).apply {
-                type = "text/plain"; putExtra(Intent.EXTRA_STREAM, uri)
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            }, "Partager le journal"))
-        } catch (e: Exception) { appendLog("Partage impossible: ${e.message}") }
-    }
-
-    override fun onDestroy() { super.onDestroy(); ble.disconnect() }
 }

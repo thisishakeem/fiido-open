@@ -11,8 +11,8 @@ android {
         applicationId = "com.fiidoopen.explorer"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "0.1-mvp"
+        versionCode = 9
+        versionName = "0.9"
     }
 
     buildTypes {
@@ -37,5 +37,9 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.activity:activity-ktx:1.9.2")
+    implementation("androidx.fragment:fragment-ktx:1.8.4")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.6")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.6")
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
 }

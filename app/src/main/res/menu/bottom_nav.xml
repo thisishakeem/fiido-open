@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/nav_bike" android:icon="@drawable/ic_bike" android:title="@string/tab_bike" />
+    <item android:id="@+id/nav_rides" android:icon="@drawable/ic_rides" android:title="@string/tab_rides" />
+    <item android:id="@+id/nav_map" android:icon="@drawable/ic_map" android:title="@string/tab_map" />
+    <item android:id="@+id/nav_settings" android:icon="@drawable/ic_settings" android:title="@string/tab_settings" />
+</menu>

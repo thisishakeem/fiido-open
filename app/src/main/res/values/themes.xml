@@ -1,6 +1,10 @@
 <resources>
-    <style name="Theme.FiidoOpen" parent="Theme.Material3.Dark.NoActionBar">
-        <item name="android:statusBarColor">#0E1524</item>
-        <item name="android:windowBackground">#0E1524</item>
+    <style name="Theme.FiidoOpen" parent="Theme.Material3.Light.NoActionBar">
+        <item name="android:statusBarColor">@color/bg</item>
+        <item name="android:windowBackground">@color/bg</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">#FFFFFFFF</item>
+        <item name="colorSurface">@color/surface</item>
     </style>
 </resources>

@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">Fiido BLE Explorer</string>
+    <string name="app_name">Fiido Open</string>
+    <string name="tab_bike">Vélo</string>
+    <string name="tab_rides">Trajets</string>
+    <string name="tab_map">Carte</string>
+    <string name="tab_settings">Réglages</string>
 </resources>

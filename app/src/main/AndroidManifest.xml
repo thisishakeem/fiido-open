@@ -2,13 +2,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Réseau (fonds de carte osmdroid, itinéraires) -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <!-- BLE : Android <= 11 -->
     <uses-permission android:name="android.permission.BLUETOOTH"
         android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"
         android:maxSdkVersion="30" />
-    <!-- GPS pour la géoloc du vélo garé (toutes versions) -->
+    <!-- GPS pour la géoloc du vélo garé + navigation (toutes versions) -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <!-- BLE : Android 12+ -->
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN"

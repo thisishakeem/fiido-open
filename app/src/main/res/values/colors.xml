@@ -1,11 +1,26 @@
 <resources>
-    <color name="bg">#FF0E1524</color>
-    <color name="surface">#FF171F30</color>
-    <color name="surfaceHi">#FF1F273A</color>
-    <color name="primary">#FF9FCAFF</color>
-    <color name="primaryCont">#FF1D4B78</color>
-    <color name="onPrimaryCont">#FFD2E4FF</color>
-    <color name="txt">#FFE3E7EF</color>
-    <color name="txtDim">#FFAEB6C6</color>
-    <color name="green">#FF8FF0B4</color>
+    <!-- Palette claire (design Flow / identité Fiido teal) -->
+    <color name="bg">#FFFBFCFC</color>
+    <color name="surface">#FFFFFFFF</color>
+    <color name="surfaceAlt">#FFF0F3F3</color>
+    <color name="primary">#FF0C7B88</color>
+    <color name="primaryDark">#FF0A5E68</color>
+    <color name="primaryCont">#FFD4EEF0</color>
+    <color name="ink">#FF073238</color>
+    <color name="txt">#FF0E1A1A</color>
+    <color name="txtDim">#FF8A9796</color>
+    <color name="line">#FFEDF1F1</color>
+    <color name="ok">#FF12A06B</color>
+
+    <!-- Couleurs des modes d'assistance -->
+    <color name="mode_off">#FF94A3A3</color>
+    <color name="mode_eco">#FF2FA36B</color>
+    <color name="mode_normal">#FF0C7B88</color>
+    <color name="mode_sport">#FFC9781A</color>
+    <color name="mode_turbo">#FFCC4A3C</color>
+    <color name="mode_turboplus">#FF6A4CE0</color>
+
+    <!-- Navigation (carte sombre) -->
+    <color name="navBg">#FF0E1A1C</color>
+    <color name="navSheet">#FFFBFCFC</color>
 </resources>

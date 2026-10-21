@@ -1,0 +1,124 @@
+package com.fiidoopen.explorer
+
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
+import android.os.Bundle
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.LinearLayout
+import android.widget.TextView
+import androidx.fragment.app.Fragment
+import com.fiidoopen.explorer.databinding.FragmentHomeBinding
+import kotlin.math.roundToInt
+
+class HomeFragment : Fragment() {
+
+    private var _b: FragmentHomeBinding? = null
+    private val b get() = _b!!
+
+    private val names = listOf("OFF", "ÉCO", "NORMAL", "SPORT", "TURBO", "TURBO+")
+    private val strong = listOf("#94A3A3", "#2FA36B", "#0C7B88", "#C9781A", "#CC4A3C", "#6A4CE0")
+    private val soft = listOf("#F0F3F3", "#E1F5EC", "#D7ECEE", "#FBEBD5", "#FBE2DF", "#EAE4FB")
+
+    private val pills = mutableListOf<TextView>()
+    private var currentMode = -1
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, s: Bundle?): View {
+        _b = FragmentHomeBinding.inflate(inflater, container, false)
+        return b.root
+    }
+
+    override fun onViewCreated(view: View, s: Bundle?) {
+        buildPills()
+        highlight(-1)
+
+        BikeHub.connected.observe(viewLifecycleOwner) { conn -> renderConnection(conn) }
+        BikeHub.state.observe(viewLifecycleOwner) { st ->
+            if (BikeHub.connected.value != true) {
+                b.statusBadge.text = (st ?: "HORS LIGNE").uppercase()
+            }
+        }
+        BikeHub.status.observe(viewLifecycleOwner) { it?.let { st -> renderStatus(st) } }
+    }
+
+    private fun dp(v: Int) = (v * resources.displayMetrics.density).roundToInt()
+
+    private fun buildPills() {
+        b.modesRow.removeAllViews()
+        pills.clear()
+        for (i in names.indices) {
+            val t = TextView(requireContext()).apply {
+                text = names[i]
+                gravity = Gravity.CENTER
+                textSize = 10f
+                setTypeface(typeface, android.graphics.Typeface.BOLD)
+                setPadding(0, dp(11), 0, dp(11))
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                    .apply { marginStart = dp(3); marginEnd = dp(3) }
+                setOnClickListener {
+                    if (BikeHub.isReady() && BikeHub.ble.setAssist(i)) {
+                        highlight(i)
+                    }
+                }
+            }
+            pills.add(t)
+            b.modesRow.addView(t)
+        }
+    }
+
+    private fun pillBg(radius: Int, color: Int): GradientDrawable =
+        GradientDrawable().apply { cornerRadius = dp(radius).toFloat(); setColor(color) }
+
+    private fun highlight(active: Int) {
+        currentMode = active
+        pills.forEachIndexed { i, t ->
+            if (i == active) {
+                t.background = pillBg(13, Color.parseColor(strong[i]))
+                t.setTextColor(Color.WHITE)
+            } else {
+                t.background = pillBg(13, Color.parseColor(soft[i]))
+                t.setTextColor(Color.parseColor(strong[i]))
+            }
+        }
+    }
+
+    private fun renderConnection(conn: Boolean) {
+        if (conn) {
+            b.statusBadge.text = "CONNECTÉ"
+            b.statusBadge.setBackgroundResource(R.drawable.bg_badge_ok)
+            b.statusBadge.setTextColor(Color.parseColor("#0A7A52"))
+        } else {
+            b.statusBadge.setBackgroundResource(R.drawable.bg_badge_soft)
+            b.statusBadge.setTextColor(Color.parseColor("#8A9796"))
+            b.battPct.text = "— %"
+            b.rangeTxt.text = ""
+        }
+    }
+
+    private fun renderStatus(st: BleClient.Status) {
+        val pct = st.batteryPct.coerceIn(0, 100)
+        val mode = st.assist.coerceIn(0, 5)
+        b.battPct.text = "$pct %"
+        highlight(mode)
+
+        // Badge mode (coloré)
+        b.modeBadge.text = names[mode]
+        b.modeBadge.background = pillBg(999, Color.parseColor(soft[mode]))
+        b.modeBadge.setTextColor(Color.parseColor(strong[mode]))
+
+        // Autonomie estimée
+        if (mode in 1..5) {
+            val km = BikeHub.estimatedRangeKm(pct, mode).roundToInt()
+            b.rangeTxt.text = "·  $km km"
+        } else {
+            b.rangeTxt.text = ""
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _b = null
+    }
+}

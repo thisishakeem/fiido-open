@@ -1,177 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg"
-    android:fillViewport="true">
+    android:orientation="vertical"
+    android:background="@color/bg">
 
-    <LinearLayout
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNav"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:background="@color/surface"
+        app:elevation="8dp"
+        app:labelVisibilityMode="labeled"
+        app:itemIconTint="@color/nav_item"
+        app:itemTextColor="@color/nav_item"
+        app:menu="@menu/bottom_nav" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Fiido Open"
-                android:textColor="@color/txt"
-                android:textSize="24sp"
-                android:textStyle="bold" />
-            <TextView
-                android:id="@+id/status"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="…"
-                android:textColor="@color/txtDim"
-                android:textSize="12sp" />
-        </LinearLayout>
-
-        <!-- Illustration du vélo -->
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="190dp"
-            android:src="@drawable/bike_c11"
-            android:adjustViewBounds="true"
-            android:scaleType="fitCenter"
-            android:contentDescription="Fiido C11"
-            android:layout_marginTop="4dp" />
-
-        <!-- Batterie -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@color/primaryCont"
-            android:padding="20dp"
-            android:layout_marginTop="8dp">
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="Batterie" android:textColor="@color/onPrimaryCont"/>
-            <TextView android:id="@+id/battPct" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="— %" android:textColor="@color/onPrimaryCont" android:textSize="48sp"/>
-        </LinearLayout>
-
-        <!-- Vitesse / Assistance -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="12dp">
-            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
-                android:orientation="vertical" android:background="@color/surfaceHi" android:padding="16dp" android:layout_marginEnd="6dp">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="Vitesse" android:textColor="@color/txtDim" android:textSize="12sp"/>
-                <TextView android:id="@+id/speed" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="—" android:textColor="@color/txt" android:textSize="22sp"/>
-            </LinearLayout>
-            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
-                android:orientation="vertical" android:background="@color/surfaceHi" android:padding="16dp" android:layout_marginStart="6dp">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="Assistance" android:textColor="@color/txtDim" android:textSize="12sp"/>
-                <TextView android:id="@+id/assist" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="—" android:textColor="@color/txt" android:textSize="22sp"/>
-            </LinearLayout>
-        </LinearLayout>
-
-        <!-- Contrôle assistance -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@color/surface"
-            android:padding="16dp"
-            android:layout_marginTop="12dp">
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="Régler l'assistance" android:textColor="@color/txt" android:textStyle="bold"/>
-            <LinearLayout
-                android:id="@+id/assistRow"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="8dp" />
-        </LinearLayout>
-
-        <!-- Identification des commandes (test) -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@color/surface"
-            android:padding="16dp"
-            android:layout_marginTop="12dp">
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="Identifier les commandes (test)" android:textColor="@color/txt" android:textStyle="bold"/>
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:text="Appuie sur chaque bouton et note ce qui change sur le vélo (klaxon, lumière, gardien, limite…)."
-                android:textColor="@color/txtDim" android:textSize="12sp" android:paddingTop="2dp" android:paddingBottom="6dp"/>
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-                <Button android:id="@+id/cmd2708" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="27→08" android:textSize="12sp"/>
-                <Button android:id="@+id/cmd2780" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="27→80" android:textSize="12sp"/>
-                <Button android:id="@+id/cmd2700" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="27→00" android:textSize="12sp"/>
-            </LinearLayout>
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-                <Button android:id="@+id/cmd2b40" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="2B→40" android:textSize="12sp"/>
-                <Button android:id="@+id/cmd2b00" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="2B→00" android:textSize="12sp"/>
-            </LinearLayout>
-        </LinearLayout>
-
-        <!-- Vélo garé -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@color/surface"
-            android:padding="16dp"
-            android:layout_marginTop="12dp">
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="Vélo garé" android:textColor="@color/txt" android:textStyle="bold"/>
-            <TextView android:id="@+id/parked" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:text="Position enregistrée à la déconnexion." android:textColor="@color/txtDim"
-                android:textSize="13sp" android:paddingTop="4dp"/>
-            <Button android:id="@+id/mapBtn" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="Voir sur la carte" android:layout_marginTop="8dp"/>
-        </LinearLayout>
-
-        <!-- Reconnexion / scan (discret) -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="8dp">
-            <Button android:id="@+id/scanBtn" android:layout_width="0dp" android:layout_height="wrap_content"
-                android:layout_weight="1" android:text="Reconnecter" style="?android:attr/borderlessButtonStyle" android:textColor="@color/txtDim"/>
-            <Button android:id="@+id/disconnectBtn" android:layout_width="0dp" android:layout_height="wrap_content"
-                android:layout_weight="1" android:text="Déconnexion" style="?android:attr/borderlessButtonStyle" android:textColor="@color/txtDim"/>
-        </LinearLayout>
-
-        <!-- Appareils (scan manuel) -->
-        <LinearLayout android:id="@+id/deviceList" android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:orientation="vertical"/>
-
-        <!-- Journal technique (debug, discret) -->
-        <Button android:id="@+id/toggleLog" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="· journal technique ·" android:layout_marginTop="8dp"
-            style="?android:attr/borderlessButtonStyle" android:textColor="#44AEB6C6" android:textSize="11sp"/>
-        <LinearLayout android:id="@+id/logBox" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:orientation="vertical" android:visibility="gone">
-            <TextView android:id="@+id/logView" android:layout_width="match_parent" android:layout_height="220dp"
-                android:fontFamily="monospace" android:textSize="10sp" android:textColor="@color/txtDim"
-                android:scrollbars="vertical" android:background="@color/surface" android:padding="6dp"/>
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="4dp">
-                <EditText android:id="@+id/hexInput" android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1" android:hint="hex" android:textColorHint="@color/txtDim" android:textColor="@color/txt" android:fontFamily="monospace"/>
-                <Button android:id="@+id/sendBtn" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Envoyer"/>
-            </LinearLayout>
-            <Spinner android:id="@+id/charSpinner" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-            <Button android:id="@+id/scanRegBtn" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Scanner les registres"/>
-            <Button android:id="@+id/shareBtn" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Partager le journal"/>
-        </LinearLayout>
-
-    </LinearLayout>
-</ScrollView>
+</LinearLayout>
