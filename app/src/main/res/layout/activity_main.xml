@@ -97,6 +97,30 @@
                 android:layout_marginTop="8dp" />
         </LinearLayout>
 
+        <!-- Identification des commandes (test) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/surface"
+            android:padding="16dp"
+            android:layout_marginTop="12dp">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Identifier les commandes (test)" android:textColor="@color/txt" android:textStyle="bold"/>
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="Appuie sur chaque bouton et note ce qui change sur le vélo (klaxon, lumière, gardien, limite…)."
+                android:textColor="@color/txtDim" android:textSize="12sp" android:paddingTop="2dp" android:paddingBottom="6dp"/>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                <Button android:id="@+id/t27_08" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="27→08" android:textSize="12sp"/>
+                <Button android:id="@+id/t27_80" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="27→80" android:textSize="12sp"/>
+                <Button android:id="@+id/t27_00" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="27→00" android:textSize="12sp"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                <Button android:id="@+id/t2b_40" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="2B→40" android:textSize="12sp"/>
+                <Button android:id="@+id/t2b_00" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="2B→00" android:textSize="12sp"/>
+            </LinearLayout>
+        </LinearLayout>
+
         <!-- Vélo garé -->
         <LinearLayout
             android:layout_width="match_parent"

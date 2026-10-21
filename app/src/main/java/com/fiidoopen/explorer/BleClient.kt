@@ -253,10 +253,12 @@ class BleClient(
     }
 
     /** Règle le niveau d'assistance (0..5) : 46 64 AA 01 26 <niveau> <xor>. Confirmé par capture. */
-    fun setAssist(level: Int): Boolean {
+    fun setAssist(level: Int): Boolean = setReg(0x26, level)
+
+    /** Écrit un registre de réglage : 46 64 AA 01 <reg> <valeur> <xor>. (Commandes capturées = sûres.) */
+    fun setReg(reg: Int, value: Int): Boolean {
         val ref = writeRef ?: return false
-        val frame = buildFrame(byteArrayOf(0xAA.toByte(), 0x01, 0x26, (level and 0xFF).toByte()))
-        return write(ref, frame)
+        return write(ref, buildFrame(byteArrayOf(0xAA.toByte(), 0x01, (reg and 0xFF).toByte(), (value and 0xFF).toByte())))
     }
 
     fun startPolling() {
