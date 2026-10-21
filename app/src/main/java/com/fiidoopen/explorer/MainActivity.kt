@@ -73,11 +73,11 @@ class MainActivity : AppCompatActivity() {
         b.sendBtn.setOnClickListener { sendHex() }
         b.shareBtn.setOnClickListener { shareLog() }
         b.scanRegBtn.setOnClickListener { ble.scanRegisters() }
-        b.t27_08.setOnClickListener { ble.setReg(0x27, 0x08); appendLog("test → 0x27 = 0x08") }
-        b.t27_80.setOnClickListener { ble.setReg(0x27, 0x80); appendLog("test → 0x27 = 0x80") }
-        b.t27_00.setOnClickListener { ble.setReg(0x27, 0x00); appendLog("test → 0x27 = 0x00") }
-        b.t2b_40.setOnClickListener { ble.setReg(0x2B, 0x40); appendLog("test → 0x2B = 0x40") }
-        b.t2b_00.setOnClickListener { ble.setReg(0x2B, 0x00); appendLog("test → 0x2B = 0x00") }
+        b.cmd2708.setOnClickListener { ble.setReg(0x27, 0x08); appendLog("test → 0x27 = 0x08") }
+        b.cmd2780.setOnClickListener { ble.setReg(0x27, 0x80); appendLog("test → 0x27 = 0x80") }
+        b.cmd2700.setOnClickListener { ble.setReg(0x27, 0x00); appendLog("test → 0x27 = 0x00") }
+        b.cmd2b40.setOnClickListener { ble.setReg(0x2B, 0x40); appendLog("test → 0x2B = 0x40") }
+        b.cmd2b00.setOnClickListener { ble.setReg(0x2B, 0x00); appendLog("test → 0x2B = 0x00") }
         b.mapBtn.setOnClickListener { openMap() }
         b.toggleLog.setOnClickListener {
             b.logBox.visibility = if (b.logBox.visibility == View.GONE) View.VISIBLE else View.GONE
