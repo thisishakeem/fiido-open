@@ -67,7 +67,8 @@ class MainActivity : AppCompatActivity() {
             onStatus = { st -> runOnUiThread { showStatus(st) } }
         )
 
-        b.scanBtn.setOnClickListener { ensurePermsThenScan() }
+        buildAssistButtons()
+        b.scanBtn.setOnClickListener { tryAutoConnect() }   // « Reconnecter »
         b.disconnectBtn.setOnClickListener { captureParked(); ble.disconnect() }
         b.sendBtn.setOnClickListener { sendHex() }
         b.shareBtn.setOnClickListener { shareLog() }
@@ -105,12 +106,38 @@ class MainActivity : AppCompatActivity() {
         if (!ble.connectKnown(addr)) { appendLog("Connexion directe impossible — utilise Scan."); ble.startScan() }
     }
 
+    private var assistButtons = listOf<Button>()
+
+    private fun buildAssistButtons() {
+        assistButtons = (0..5).map { lvl ->
+            Button(this).apply {
+                text = lvl.toString()
+                isAllCaps = false
+                setOnClickListener {
+                    if (ble.setAssist(lvl)) appendLog("→ assistance réglée sur $lvl")
+                    else appendLog("Assistance : connecte d'abord le vélo.")
+                }
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                    .apply { marginEnd = 6 }
+            }
+        }
+        b.assistRow.removeAllViews()
+        assistButtons.forEach { b.assistRow.addView(it) }
+    }
+
+    private fun highlightAssist(level: Int) {
+        assistButtons.forEachIndexed { i, btn ->
+            if (i == level) { btn.setBackgroundColor(Color.parseColor("#9FCAFF")); btn.setTextColor(Color.parseColor("#00325A")) }
+            else { btn.setBackgroundColor(Color.parseColor("#1F273A")); btn.setTextColor(Color.parseColor("#E3E7EF")) }
+        }
+    }
+
     private fun showStatus(st: BleClient.Status) {
         wasConnected = true
         b.battPct.text = "${st.batteryPct} %"
-        b.battVolt.text = "%.2f V  ·  estimation".format(st.voltage)
         b.speed.text = "${st.speedRaw}"
         b.assist.text = "${st.assist}"
+        highlightAssist(st.assist)
     }
 
     private fun renderDevices(list: List<BleClient.DeviceEntry>) {

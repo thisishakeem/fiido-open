@@ -11,48 +11,37 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fiido Open"
-            android:textColor="@color/txt"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:paddingBottom="8dp" />
-
-        <TextView
-            android:id="@+id/status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Non connecté"
-            android:textColor="@color/txtDim"
-            android:paddingBottom="10dp" />
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-            <Button
-                android:id="@+id/scanBtn"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Scan" />
-            <Button
-                android:id="@+id/disconnectBtn"
-                android:layout_width="0dp"
+                android:text="Fiido Open"
+                android:textColor="@color/txt"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/status"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Déconnexion" />
+                android:text="…"
+                android:textColor="@color/txtDim"
+                android:textSize="12sp" />
         </LinearLayout>
 
-        <!-- Liste des appareils (scan) -->
-        <LinearLayout
-            android:id="@+id/deviceList"
+        <!-- Illustration du vélo -->
+        <ImageView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="8dp" />
+            android:layout_height="190dp"
+            android:src="@drawable/bike_c11"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:contentDescription="Fiido C11"
+            android:layout_marginTop="4dp" />
 
         <!-- Batterie -->
         <LinearLayout
@@ -61,25 +50,11 @@
             android:orientation="vertical"
             android:background="@color/primaryCont"
             android:padding="20dp"
-            android:layout_marginTop="12dp">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Batterie"
-                android:textColor="@color/onPrimaryCont" />
-            <TextView
-                android:id="@+id/battPct"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="— %"
-                android:textColor="@color/onPrimaryCont"
-                android:textSize="48sp" />
-            <TextView
-                android:id="@+id/battVolt"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="— V (estimation)"
-                android:textColor="@color/onPrimaryCont" />
+            android:layout_marginTop="8dp">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Batterie" android:textColor="@color/onPrimaryCont"/>
+            <TextView android:id="@+id/battPct" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="— %" android:textColor="@color/onPrimaryCont" android:textSize="48sp"/>
         </LinearLayout>
 
         <!-- Vitesse / Assistance -->
@@ -88,32 +63,38 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginTop="12dp">
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:background="@color/surfaceHi"
-                android:padding="16dp"
-                android:layout_marginEnd="6dp">
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                android:orientation="vertical" android:background="@color/surfaceHi" android:padding="16dp" android:layout_marginEnd="6dp">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                     android:text="Vitesse" android:textColor="@color/txtDim" android:textSize="12sp"/>
                 <TextView android:id="@+id/speed" android:layout_width="wrap_content" android:layout_height="wrap_content"
                     android:text="—" android:textColor="@color/txt" android:textSize="22sp"/>
             </LinearLayout>
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:background="@color/surfaceHi"
-                android:padding="16dp"
-                android:layout_marginStart="6dp">
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                android:orientation="vertical" android:background="@color/surfaceHi" android:padding="16dp" android:layout_marginStart="6dp">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                     android:text="Assistance" android:textColor="@color/txtDim" android:textSize="12sp"/>
                 <TextView android:id="@+id/assist" android:layout_width="wrap_content" android:layout_height="wrap_content"
                     android:text="—" android:textColor="@color/txt" android:textSize="22sp"/>
             </LinearLayout>
+        </LinearLayout>
+
+        <!-- Contrôle assistance -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/surface"
+            android:padding="16dp"
+            android:layout_marginTop="12dp">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Régler l'assistance" android:textColor="@color/txt" android:textStyle="bold"/>
+            <LinearLayout
+                android:id="@+id/assistRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp" />
         </LinearLayout>
 
         <!-- Vélo garé -->
@@ -133,45 +114,38 @@
                 android:text="Voir sur la carte" android:layout_marginTop="8dp"/>
         </LinearLayout>
 
-        <!-- Journal (debug) -->
-        <Button
-            android:id="@+id/toggleLog"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Journal technique ▾"
-            android:layout_marginTop="12dp"
-            style="?android:attr/borderlessButtonStyle"
-            android:textColor="@color/txtDim" />
+        <!-- Reconnexion / scan (discret) -->
         <LinearLayout
-            android:id="@+id/logBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone">
-            <TextView
-                android:id="@+id/logView"
-                android:layout_width="match_parent"
-                android:layout_height="220dp"
-                android:fontFamily="monospace"
-                android:textSize="10sp"
-                android:textColor="@color/txtDim"
-                android:scrollbars="vertical"
-                android:background="@color/surface"
-                android:padding="6dp" />
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="4dp">
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+            <Button android:id="@+id/scanBtn" android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:text="Reconnecter" style="?android:attr/borderlessButtonStyle" android:textColor="@color/txtDim"/>
+            <Button android:id="@+id/disconnectBtn" android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:text="Déconnexion" style="?android:attr/borderlessButtonStyle" android:textColor="@color/txtDim"/>
+        </LinearLayout>
+
+        <!-- Appareils (scan manuel) -->
+        <LinearLayout android:id="@+id/deviceList" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:orientation="vertical"/>
+
+        <!-- Journal technique (debug, discret) -->
+        <Button android:id="@+id/toggleLog" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="· journal technique ·" android:layout_marginTop="8dp"
+            style="?android:attr/borderlessButtonStyle" android:textColor="#44AEB6C6" android:textSize="11sp"/>
+        <LinearLayout android:id="@+id/logBox" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:visibility="gone">
+            <TextView android:id="@+id/logView" android:layout_width="match_parent" android:layout_height="220dp"
+                android:fontFamily="monospace" android:textSize="10sp" android:textColor="@color/txtDim"
+                android:scrollbars="vertical" android:background="@color/surface" android:padding="6dp"/>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="4dp">
                 <EditText android:id="@+id/hexInput" android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1" android:hint="hex ex: 46 64 55 26 1C 4D" android:textColorHint="@color/txtDim"
-                    android:textColor="@color/txt" android:fontFamily="monospace"/>
-                <Button android:id="@+id/sendBtn" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="Envoyer"/>
+                    android:layout_weight="1" android:hint="hex" android:textColorHint="@color/txtDim" android:textColor="@color/txt" android:fontFamily="monospace"/>
+                <Button android:id="@+id/sendBtn" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Envoyer"/>
             </LinearLayout>
             <Spinner android:id="@+id/charSpinner" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-            <Button android:id="@+id/shareBtn" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:text="Partager le journal"/>
+            <Button android:id="@+id/shareBtn" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Partager le journal"/>
         </LinearLayout>
 
     </LinearLayout>

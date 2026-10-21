@@ -1,2 +1,2 @@
 package com.fiidoopen.explorer
-object BuildStamp { const val VERSION = "v0.5 — connexion auto + abonnement robuste" }
+object BuildStamp { const val VERSION = "v0.6 — refonte + assistance" }

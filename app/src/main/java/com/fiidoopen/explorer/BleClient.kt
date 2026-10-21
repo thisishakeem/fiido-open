@@ -28,7 +28,7 @@ class BleClient(
 ) {
     data class DeviceEntry(val device: BluetoothDevice, val name: String, val rssi: Int)
     /** Télémétrie décodée depuis la trame d'état (registre 0x26). */
-    data class Status(val voltage: Double, val batteryPct: Int, val assist: Int, val speedRaw: Int)
+    data class Status(val batteryPct: Int, val assist: Int, val speedRaw: Int)
     data class CharRef(val service: UUID, val characteristic: UUID) {
         override fun toString() = "$service / $characteristic"
     }
@@ -245,12 +245,18 @@ class BleClient(
         if (b.size < 16) return
         if ((b[0].toInt() and 0xFF) != 0x46 || (b[1].toInt() and 0xFF) != 0x64) return
         if ((b[2].toInt() and 0xFF) != 0xAA || (b[3].toInt() and 0xFF) != 0x26) return
-        val volt = (((b[13].toInt() and 0xFF) shl 8) or (b[14].toInt() and 0xFF)) / 100.0  // ex 0x0F50 -> 39.20 V
-        val assist = b[15].toInt() and 0xFF
-        val speed = b[12].toInt() and 0xFF
-        // % batterie estimé depuis la tension (pack 36 V / 10S : ~33 V vide, ~42 V plein)
-        val pct = (((volt - 33.0) / (42.0 - 33.0)) * 100.0).coerceIn(0.0, 100.0).toInt()
-        onStatus(Status(volt, pct, assist, speed))
+        // Octets calés par comparaison batterie basse (0x0F=15%) vs pleine (0x5A=90%)
+        val batt = (b[13].toInt() and 0xFF).coerceIn(0, 100)  // data[8] = % direct
+        val assist = b[15].toInt() and 0xFF                   // data[10]
+        val speed = b[12].toInt() and 0xFF                    // data[7]
+        onStatus(Status(batt, assist, speed))
+    }
+
+    /** Règle le niveau d'assistance (0..5) : 46 64 AA 01 26 <niveau> <xor>. Confirmé par capture. */
+    fun setAssist(level: Int): Boolean {
+        val ref = writeRef ?: return false
+        val frame = buildFrame(byteArrayOf(0xAA.toByte(), 0x01, 0x26, (level and 0xFF).toByte()))
+        return write(ref, frame)
     }
 
     fun startPolling() {
