@@ -266,6 +266,21 @@ class BleClient(
     }
     fun stopPolling() { polling = false }
 
+    /** Scan lecture seule des registres 0x00..0x40 : 46 64 55 <reg> 00 <xor>. Sûr (aucune écriture). */
+    fun scanRegisters() {
+        val ref = writeRef ?: run { log("Scan registres : connecte d'abord le vélo."); return }
+        stopPolling()
+        log("--- SCAN REGISTRES 0x00..0x40 (lecture seule) ---")
+        var reg = 0
+        fun step() {
+            if (reg > 0x40) { log("--- scan registres terminé ---"); startPolling(); return }
+            writeSilent(ref, buildFrame(byteArrayOf(0x55, reg.toByte(), 0x00)))
+            reg++
+            main.postDelayed({ step() }, 220)
+        }
+        step()
+    }
+
     private fun pollTick() {
         if (!polling) return
         val ref = writeRef

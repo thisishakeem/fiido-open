@@ -145,6 +145,7 @@
                 <Button android:id="@+id/sendBtn" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Envoyer"/>
             </LinearLayout>
             <Spinner android:id="@+id/charSpinner" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <Button android:id="@+id/scanRegBtn" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Scanner les registres"/>
             <Button android:id="@+id/shareBtn" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Partager le journal"/>
         </LinearLayout>
 

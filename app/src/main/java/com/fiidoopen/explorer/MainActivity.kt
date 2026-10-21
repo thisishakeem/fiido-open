@@ -72,6 +72,7 @@ class MainActivity : AppCompatActivity() {
         b.disconnectBtn.setOnClickListener { captureParked(); ble.disconnect() }
         b.sendBtn.setOnClickListener { sendHex() }
         b.shareBtn.setOnClickListener { shareLog() }
+        b.scanRegBtn.setOnClickListener { ble.scanRegisters() }
         b.mapBtn.setOnClickListener { openMap() }
         b.toggleLog.setOnClickListener {
             b.logBox.visibility = if (b.logBox.visibility == View.GONE) View.VISIBLE else View.GONE
