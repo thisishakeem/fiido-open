@@ -34,13 +34,15 @@ class MainActivity : AppCompatActivity() {
     private var writable: List<BleClient.CharRef> = emptyList()
     private var wasConnected = false
 
+    private var autoConnectAfterPerm = false
+
     private val permLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { res ->
-            // On a besoin du Bluetooth pour scanner ; la localisation est optionnelle (vélo garé).
             val btOk = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
                 res[Manifest.permission.BLUETOOTH_SCAN] == true && res[Manifest.permission.BLUETOOTH_CONNECT] == true
             else true
-            if (btOk) ble.startScan() else appendLog("Permissions Bluetooth refusées — impossible de scanner.")
+            if (!btOk) { appendLog("Permissions Bluetooth refusées."); return@registerForActivityResult }
+            if (autoConnectAfterPerm) { autoConnectAfterPerm = false; connectKnownNow() } else ble.startScan()
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,6 +78,31 @@ class MainActivity : AppCompatActivity() {
 
         showParkedFromPrefs()
         appendLog("Fiido Open ${BuildStamp.VERSION}")
+
+        // Vélo mémorisé → connexion directe à l'ouverture
+        ble.knownBike = getSharedPreferences("fiido", Context.MODE_PRIVATE)
+            .getString("bikeAddress", "D7:39:0E:7E:FB:0E") // ton Fiido C11 par défaut
+        if (ble.knownBike != null) {
+            b.status.text = "Connexion à ton vélo…"
+            tryAutoConnect()
+        }
+    }
+
+    private fun tryAutoConnect() {
+        val connectPerm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+            Manifest.permission.BLUETOOTH_CONNECT else Manifest.permission.ACCESS_FINE_LOCATION
+        if (ContextCompat.checkSelfPermission(this, connectPerm) == PackageManager.PERMISSION_GRANTED) {
+            connectKnownNow()
+        } else {
+            autoConnectAfterPerm = true
+            permLauncher.launch(neededPerms())
+        }
+    }
+
+    private fun connectKnownNow() {
+        val addr = ble.knownBike ?: return
+        if (!ble.isBluetoothOn()) { appendLog("Active le Bluetooth."); return }
+        if (!ble.connectKnown(addr)) { appendLog("Connexion directe impossible — utilise Scan."); ble.startScan() }
     }
 
     private fun showStatus(st: BleClient.Status) {
@@ -103,7 +130,13 @@ class MainActivity : AppCompatActivity() {
             btn.layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
             )
-            btn.setOnClickListener { b.deviceList.removeAllViews(); ble.connect(d.device) }
+            btn.setOnClickListener {
+                // mémorise ce vélo pour les prochaines connexions directes
+                getSharedPreferences("fiido", Context.MODE_PRIVATE).edit()
+                    .putString("bikeAddress", d.device.address).apply()
+                ble.knownBike = d.device.address
+                b.deviceList.removeAllViews(); ble.connect(d.device)
+            }
             b.deviceList.addView(btn)
         }
     }

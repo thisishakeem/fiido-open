@@ -42,6 +42,9 @@ class BleClient(
     private val writable = mutableListOf<CharRef>()
     private val found = LinkedHashMap<String, DeviceEntry>()
     private var scanning = false
+    var knownBike: String? = null           // adresse MAC du vélo mémorisé
+    private var pendingNotify: List<BluetoothGattCharacteristic> = emptyList()
+    private var notifyIdx = 0
 
     val cccd: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
     private val ffe2: UUID = UUID.fromString("00010203-0405-0607-0809-0a0b0c0dffe2")
@@ -76,6 +79,11 @@ class BleClient(
             val name = result.scanRecord?.deviceName ?: runCatching { dev.name }.getOrNull() ?: "(sans nom)"
             found[dev.address] = DeviceEntry(dev, name, result.rssi)
             onDevices(found.values.sortedByDescending { it.rssi })
+            // auto-connexion au vélo mémorisé dès qu'il apparaît
+            if (scanning && dev.address.equals(knownBike, true)) {
+                log("Vélo mémorisé repéré → connexion directe")
+                connect(dev)
+            }
         }
         override fun onScanFailed(errorCode: Int) { onState("Échec du scan ($errorCode)") }
     }
@@ -99,6 +107,16 @@ class BleClient(
     fun stopScan() {
         scanning = false
         try { scanner?.stopScan(scanCallback) } catch (_: Exception) {}
+    }
+
+    /** Connexion directe à une adresse MAC connue, sans scan (le plus rapide). */
+    @SuppressLint("MissingPermission")
+    fun connectKnown(address: String): Boolean {
+        val a = adapter ?: return false
+        if (!isBluetoothOn()) { onState("Active le Bluetooth"); return false }
+        val dev = try { a.getRemoteDevice(address) } catch (e: Exception) { return false }
+        connect(dev)
+        return true
     }
 
     @SuppressLint("MissingPermission")
@@ -161,7 +179,9 @@ class BleClient(
                 }
             }
             onWritable(writable.toList())
-            main.post { enableNext(g, notifyList, 0) }
+            pendingNotify = notifyList
+            notifyIdx = 0
+            main.post { enableNext(g) }
         }
 
         @SuppressLint("MissingPermission")
@@ -180,31 +200,37 @@ class BleClient(
         override fun onCharacteristicWrite(g: BluetoothGatt, c: BluetoothGattCharacteristic, status: Int) {
             log("← write ${c.uuid} status=$status")
         }
+
+        // L'abonnement avance seulement quand l'écriture du descripteur est confirmée.
+        override fun onDescriptorWrite(g: BluetoothGatt, d: BluetoothGattDescriptor, status: Int) {
+            log("abonné: ${d.characteristic.uuid} (status=$status)")
+            main.post { enableNext(g) }
+        }
     }
 
     @SuppressLint("MissingPermission")
-    private fun enableNext(g: BluetoothGatt, list: List<BluetoothGattCharacteristic>, i: Int) {
-        if (i >= list.size) {
+    private fun enableNext(g: BluetoothGatt) {
+        if (notifyIdx >= pendingNotify.size) {
             onState("Prêt — interrogation du vélo…")
             log("--- abonnements OK ; démarrage de l'interrogation (ffe2) ---")
             startPolling()
             return
         }
-        val c = list[i]
+        val c = pendingNotify[notifyIdx]; notifyIdx++
         g.setCharacteristicNotification(c, true)
         val d = c.getDescriptor(cccd)
-        if (d != null) {
-            val v = if (c.properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY != 0)
-                BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-            else BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                g.writeDescriptor(d, v)
-            } else {
-                @Suppress("DEPRECATION") run { d.value = v; g.writeDescriptor(d) }
-            }
-            log("abonné: ${c.uuid}")
+        if (d == null) { main.post { enableNext(g) }; return }
+        val v = if (c.properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY != 0)
+            BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+        else BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            g.writeDescriptor(d, v)
+        } else {
+            @Suppress("DEPRECATION") run { d.value = v; g.writeDescriptor(d) }
         }
-        main.postDelayed({ enableNext(g, list, i + 1) }, 250)
+        // sécurité : si onDescriptorWrite ne se déclenche pas, on continue après 1,5 s
+        val idxAtCall = notifyIdx
+        main.postDelayed({ if (notifyIdx == idxAtCall) enableNext(g) }, 1500)
     }
 
     private fun handleIncoming(uuid: UUID, value: ByteArray) {
