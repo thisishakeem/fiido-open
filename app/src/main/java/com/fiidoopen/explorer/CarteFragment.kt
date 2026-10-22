@@ -8,7 +8,6 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.fiidoopen.explorer.databinding.FragmentCarteBinding
 import org.osmdroid.config.Configuration
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.overlay.Marker
 import java.text.SimpleDateFormat
@@ -32,7 +31,7 @@ class CarteFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, s: Bundle?) {
-        b.map.setTileSource(TileSourceFactory.MAPNIK)
+        b.map.setTileSource(MapTiles.cyclosm())
         b.map.setMultiTouchControls(true)
         b.map.controller.setZoom(16.5)
 

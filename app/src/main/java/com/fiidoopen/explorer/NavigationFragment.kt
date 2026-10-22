@@ -12,7 +12,6 @@ import androidx.fragment.app.Fragment
 import com.fiidoopen.explorer.databinding.FragmentNavigationBinding
 import org.json.JSONObject
 import org.osmdroid.config.Configuration
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
@@ -56,7 +55,7 @@ class NavigationFragment : Fragment() {
         destLat = arguments?.getDouble("lat") ?: 0.0
         destLon = arguments?.getDouble("lon") ?: 0.0
 
-        b.map.setTileSource(TileSourceFactory.MAPNIK)
+        b.map.setTileSource(MapTiles.cyclosm())
         b.map.setMultiTouchControls(true)
         b.map.controller.setZoom(15.0)
         val dest = GeoPoint(destLat, destLon)
