@@ -12,9 +12,8 @@ import androidx.fragment.app.Fragment
 import com.fiidoopen.explorer.databinding.FragmentNavigationBinding
 import org.json.JSONObject
 import org.osmdroid.config.Configuration
-import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
-import org.osmdroid.util.MapTileIndex
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
 import java.net.HttpURLConnection
@@ -42,21 +41,6 @@ class NavigationFragment : Fragment() {
         }
     }
 
-    private fun darkTiles() = object : OnlineTileSourceBase(
-        "CartoDark", 0, 20, 256, ".png",
-        arrayOf(
-            "https://a.basemaps.cartocdn.com/dark_all/",
-            "https://b.basemaps.cartocdn.com/dark_all/",
-            "https://c.basemaps.cartocdn.com/dark_all/"
-        ),
-        "© OpenStreetMap, © CARTO"
-    ) {
-        override fun getTileURLString(pMapTileIndex: Long): String =
-            baseUrl + MapTileIndex.getZoom(pMapTileIndex) + "/" +
-                MapTileIndex.getX(pMapTileIndex) + "/" +
-                MapTileIndex.getY(pMapTileIndex) + mImageFilenameEnding
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, s: Bundle?): View {
         @Suppress("DEPRECATION")
         Configuration.getInstance().load(
@@ -72,7 +56,7 @@ class NavigationFragment : Fragment() {
         destLat = arguments?.getDouble("lat") ?: 0.0
         destLon = arguments?.getDouble("lon") ?: 0.0
 
-        b.map.setTileSource(darkTiles())
+        b.map.setTileSource(TileSourceFactory.MAPNIK)
         b.map.setMultiTouchControls(true)
         b.map.controller.setZoom(15.0)
         val dest = GeoPoint(destLat, destLon)

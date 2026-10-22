@@ -8,9 +8,8 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.fiidoopen.explorer.databinding.FragmentCarteBinding
 import org.osmdroid.config.Configuration
-import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
-import org.osmdroid.util.MapTileIndex
 import org.osmdroid.views.overlay.Marker
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -20,21 +19,6 @@ class CarteFragment : Fragment() {
 
     private var _b: FragmentCarteBinding? = null
     private val b get() = _b!!
-
-    private val darkTiles = object : OnlineTileSourceBase(
-        "CartoDark", 0, 20, 256, ".png",
-        arrayOf(
-            "https://a.basemaps.cartocdn.com/dark_all/",
-            "https://b.basemaps.cartocdn.com/dark_all/",
-            "https://c.basemaps.cartocdn.com/dark_all/"
-        ),
-        "© OpenStreetMap, © CARTO"
-    ) {
-        override fun getTileURLString(pMapTileIndex: Long): String =
-            baseUrl + MapTileIndex.getZoom(pMapTileIndex) + "/" +
-                MapTileIndex.getX(pMapTileIndex) + "/" +
-                MapTileIndex.getY(pMapTileIndex) + mImageFilenameEnding
-    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, s: Bundle?): View {
         @Suppress("DEPRECATION")
@@ -48,7 +32,7 @@ class CarteFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, s: Bundle?) {
-        b.map.setTileSource(darkTiles)
+        b.map.setTileSource(TileSourceFactory.MAPNIK)
         b.map.setMultiTouchControls(true)
         b.map.controller.setZoom(16.5)
 

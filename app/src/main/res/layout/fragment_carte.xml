@@ -20,7 +20,7 @@
         android:background="#66000000"
         android:paddingHorizontal="6dp"
         android:paddingVertical="2dp"
-        android:text="© OpenStreetMap · CARTO"
+        android:text="© OpenStreetMap"
         android:textColor="#DDFFFFFF"
         android:textSize="9sp" />
 
