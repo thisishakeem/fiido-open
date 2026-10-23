@@ -52,17 +52,38 @@ class BleClient(
     private var polling = false
     private var pollIndex = 0
     private var onReadyOnce: (() -> Unit)? = null
+    private var wakePending = false
+    private var wakeAttempts = 0
 
     /**
      * Allume le vélo comme l'appli officielle : si déjà connecté, envoie le réveil (0x27=0x80) ;
-     * sinon se (re)connecte au module Bluetooth de veille, puis envoie le réveil une fois prêt.
+     * sinon se (re)connecte au Bluetooth de veille et réessaie tout seul jusqu'au réveil.
+     * Un seul appui suffit.
      */
-    fun powerOn(): Boolean {
-        if (writeRef != null) { log("Réveil → 0x27=0x80"); return setReg(0x27, 0x80) }
-        log("Allumer : reconnexion au vélo en veille…")
-        onReadyOnce = { log("Connecté → réveil 0x27=0x80"); setReg(0x27, 0x80) }
-        val addr = knownBike
-        return if (addr != null) connectKnown(addr) else { startScan(); true }
+    fun powerOn() {
+        if (writeRef != null) { log("Réveil → 0x27=0x80"); setReg(0x27, 0x80); return }
+        if (wakePending) { log("Réveil déjà en cours…"); return }
+        wakePending = true
+        wakeAttempts = 0
+        onReadyOnce = { wakePending = false; log("Connecté → réveil 0x27=0x80"); setReg(0x27, 0x80) }
+        tryWake()
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun tryWake() {
+        if (!wakePending || writeRef != null) return
+        wakeAttempts++
+        log("Allumer : reconnexion au vélo en veille (tentative $wakeAttempts)…")
+        try { gatt?.disconnect(); gatt?.close() } catch (_: Exception) {}
+        gatt = null
+        knownBike?.let { connectKnown(it) } ?: run { startScan() }
+        if (wakeAttempts < 10) {
+            main.postDelayed({ if (wakePending && writeRef == null) tryWake() }, 2500)
+        } else {
+            wakePending = false
+            onState("Réveil impossible — rallume le vélo avec son bouton")
+            log("Réveil : échec après plusieurs tentatives")
+        }
     }
 
     /** Éteint le vélo (0x27=0x08, confirmé sur vélo). */
