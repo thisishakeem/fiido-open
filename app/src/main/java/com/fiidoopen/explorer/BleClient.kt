@@ -51,6 +51,22 @@ class BleClient(
     private var writeRef: CharRef? = null
     private var polling = false
     private var pollIndex = 0
+    private var onReadyOnce: (() -> Unit)? = null
+
+    /**
+     * Allume le vélo comme l'appli officielle : si déjà connecté, envoie le réveil (0x27=0x80) ;
+     * sinon se (re)connecte au module Bluetooth de veille, puis envoie le réveil une fois prêt.
+     */
+    fun powerOn(): Boolean {
+        if (writeRef != null) { log("Réveil → 0x27=0x80"); return setReg(0x27, 0x80) }
+        log("Allumer : reconnexion au vélo en veille…")
+        onReadyOnce = { log("Connecté → réveil 0x27=0x80"); setReg(0x27, 0x80) }
+        val addr = knownBike
+        return if (addr != null) connectKnown(addr) else { startScan(); true }
+    }
+
+    /** Éteint le vélo (0x27=0x08, confirmé sur vélo). */
+    fun powerOff(): Boolean { log("Extinction → 0x27=0x08"); return setReg(0x27, 0x08) }
 
     // Requêtes de lecture capturées depuis l'appli officielle (lecture seule, sûres).
     private val pollFrames = listOf(
@@ -214,6 +230,7 @@ class BleClient(
             onState("Prêt — interrogation du vélo…")
             log("--- abonnements OK ; démarrage de l'interrogation (ffe2) ---")
             startPolling()
+            onReadyOnce?.let { cb -> onReadyOnce = null; main.post { cb() } }
             return
         }
         val c = pendingNotify[notifyIdx]; notifyIdx++
