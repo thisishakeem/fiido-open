@@ -5,6 +5,7 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
@@ -24,6 +25,8 @@ class HomeFragment : Fragment() {
 
     private val pills = mutableListOf<TextView>()
     private var currentMode = -1
+    private var downX = 0f
+    private var startTX = 0f
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, s: Bundle?): View {
         _b = FragmentHomeBinding.inflate(inflater, container, false)
@@ -33,6 +36,7 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, s: Bundle?) {
         buildPills()
         highlight(-1)
+        setupPowerSlider()
 
         BikeHub.connected.observe(viewLifecycleOwner) { conn -> renderConnection(conn) }
         BikeHub.state.observe(viewLifecycleOwner) { st ->
@@ -89,12 +93,49 @@ class HomeFragment : Fragment() {
             b.statusBadge.text = "CONNECTÉ"
             b.statusBadge.setBackgroundResource(R.drawable.bg_badge_ok)
             b.statusBadge.setTextColor(Color.parseColor("#0A7A52"))
+            b.powerTrack.setBackgroundResource(R.drawable.bg_slider_on)
+            b.powerLabel.text = "Glisser pour éteindre"
         } else {
             b.statusBadge.setBackgroundResource(R.drawable.bg_badge_soft)
             b.statusBadge.setTextColor(Color.parseColor("#8A9796"))
             b.battPct.text = "— %"
             b.rangeTxt.text = ""
+            b.powerTrack.setBackgroundResource(R.drawable.bg_slider)
+            b.powerLabel.text = "Glisser pour allumer"
         }
+    }
+
+    private fun setupPowerSlider() {
+        val knob = b.powerKnob
+        knob.setOnTouchListener { v, e ->
+            val max = (b.powerTrack.width - v.width - dp(8)).toFloat().coerceAtLeast(0f)
+            when (e.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    v.parent?.requestDisallowInterceptTouchEvent(true)
+                    downX = e.rawX; startTX = v.translationX; true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    v.translationX = (startTX + (e.rawX - downX)).coerceIn(0f, max); true
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    v.parent?.requestDisallowInterceptTouchEvent(false)
+                    if (max > 0 && v.translationX >= max * 0.8f) {
+                        v.animate().translationX(max).setDuration(120).withEndAction {
+                            triggerPower()
+                            v.postDelayed({ v.animate().translationX(0f).setDuration(220).start() }, 500)
+                        }.start()
+                    } else {
+                        v.animate().translationX(0f).setDuration(160).start()
+                    }
+                    v.performClick(); true
+                }
+                else -> false
+            }
+        }
+    }
+
+    private fun triggerPower() {
+        if (BikeHub.connected.value == true) BikeHub.ble.powerOff() else BikeHub.ble.powerOn()
     }
 
     private fun renderStatus(st: BleClient.Status) {

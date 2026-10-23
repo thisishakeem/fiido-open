@@ -127,6 +127,43 @@
             android:textColor="@color/txtDim"
             android:textSize="12sp" />
 
+        <!-- Slider marche / arrêt (type BMW) -->
+        <FrameLayout
+            android:id="@+id/powerTrack"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="18dp"
+            android:background="@drawable/bg_slider">
+
+            <TextView
+                android:id="@+id/powerLabel"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:paddingStart="40dp"
+                android:text="Glisser pour allumer"
+                android:textColor="@color/txtDim"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <FrameLayout
+                android:id="@+id/powerKnob"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:layout_gravity="start|center_vertical"
+                android:layout_marginStart="4dp"
+                android:background="@drawable/bg_knob">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:contentDescription="Marche/arrêt"
+                    android:src="@drawable/ic_power" />
+            </FrameLayout>
+        </FrameLayout>
+
         <!-- Modes label -->
         <TextView
             android:layout_width="match_parent"
