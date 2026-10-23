@@ -31,3 +31,8 @@ Reconstitué par analyse statique de l'APK + capture HCI réelle (bug report And
 ## Réponse d'état (vélo → ffe1), registre 0x26, ex. :
 `46 64 AA 26 1C 00 01 26 EC 00 1A 00 00 0F 50 05 80 00 00 00 00 E0 64 7B 02 48 1E 0F 00 00 00 00 00 00 00 00 00 19 04 01 75 00 90 E4`
 Offsets batterie/vitesse en cours de calage contre l'appli officielle.
+
+## Registre 0x27 — Alimentation (confirmé sur vélo, 2026-10-23)
+- `46 64 AA 01 27 80 <xor>` → allume le vélo (power ON)
+- `46 64 AA 01 27 08 <xor>` → éteint le vélo (power OFF)
+- 0x2B (valeurs 0x40 / 0x00) : aucun effet observable — klaxon/lumière/gardien sont ailleurs (à cartographier par scan-diff ou capture de l'appli officielle).
