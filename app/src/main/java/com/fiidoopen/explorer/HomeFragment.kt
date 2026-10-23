@@ -12,6 +12,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.fiidoopen.explorer.databinding.FragmentHomeBinding
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 class HomeFragment : Fragment() {
@@ -27,6 +28,7 @@ class HomeFragment : Fragment() {
     private var currentMode = -1
     private var downX = 0f
     private var startTX = 0f
+    private var moved = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, s: Bundle?): View {
         _b = FragmentHomeBinding.inflate(inflater, container, false)
@@ -117,37 +119,41 @@ class HomeFragment : Fragment() {
 
     private fun setupPowerSlider() {
         val knob = b.powerKnob
+        // Appui simple = bascule (fiable sur tout appareil)
+        knob.setOnClickListener { togglePower() }
         knob.setOnTouchListener { v, e ->
             val max = maxTravel()
             when (e.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
                     v.parent?.requestDisallowInterceptTouchEvent(true)
-                    downX = e.rawX; startTX = v.translationX; true
+                    downX = e.rawX; startTX = v.translationX; moved = false; true
                 }
                 MotionEvent.ACTION_MOVE -> {
-                    v.translationX = (startTX + (e.rawX - downX)).coerceIn(0f, max); true
+                    val dx = e.rawX - downX
+                    if (abs(dx) > dp(6)) moved = true
+                    if (max > 0) v.translationX = (startTX + dx).coerceIn(0f, max)
+                    true
                 }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     v.parent?.requestDisallowInterceptTouchEvent(false)
-                    val on = BikeHub.connected.value == true
-                    if (!on) {
-                        // éteint → glisser vers la droite pour allumer
-                        if (max > 0 && v.translationX >= max * 0.6f) {
-                            v.animate().translationX(max).setDuration(120).start()
-                            BikeHub.ble.powerOn()
-                        } else v.animate().translationX(0f).setDuration(160).start()
+                    if (!moved) {
+                        v.performClick() // simple appui → bascule
                     } else {
-                        // allumé → glisser vers la gauche pour éteindre
-                        if (max > 0 && v.translationX <= max * 0.4f) {
-                            v.animate().translationX(0f).setDuration(120).start()
-                            BikeHub.ble.powerOff()
-                        } else v.animate().translationX(max).setDuration(160).start()
+                        val on = BikeHub.connected.value == true
+                        val crossed = if (on) v.translationX <= max * 0.5f else v.translationX >= max * 0.5f
+                        if (crossed) togglePower()
+                        val newOn = if (crossed) !on else on
+                        v.animate().translationX(if (newOn) max else 0f).setDuration(140).start()
                     }
-                    v.performClick(); true
+                    true
                 }
                 else -> false
             }
         }
+    }
+
+    private fun togglePower() {
+        if (BikeHub.connected.value == true) BikeHub.ble.powerOff() else BikeHub.ble.powerOn()
     }
 
     private fun renderStatus(st: BleClient.Status) {
