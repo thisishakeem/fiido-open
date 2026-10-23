@@ -29,6 +29,8 @@ class HomeFragment : Fragment() {
     private var downX = 0f
     private var startTX = 0f
     private var moved = false
+    private var poweredUi = false      // état marche/arrêt affiché par le slider (intention)
+    private var sliderInit = false     // slider synchronisé au moins une fois
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, s: Bundle?): View {
         _b = FragmentHomeBinding.inflate(inflater, container, false)
@@ -40,7 +42,7 @@ class HomeFragment : Fragment() {
         highlight(-1)
         setupPowerSlider()
 
-        BikeHub.connected.observe(viewLifecycleOwner) { conn -> renderConnection(conn) }
+        BikeHub.connected.observe(viewLifecycleOwner) { conn -> onConnectionChanged(conn) }
         BikeHub.state.observe(viewLifecycleOwner) { st ->
             if (BikeHub.connected.value != true) {
                 b.statusBadge.text = (st ?: "HORS LIGNE").uppercase()
@@ -90,28 +92,33 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun renderConnection(conn: Boolean) {
+    /** Lien Bluetooth : pilote seulement le badge + la synchro initiale du slider. */
+    private fun onConnectionChanged(conn: Boolean) {
         if (conn) {
             b.statusBadge.text = "CONNECTÉ"
             b.statusBadge.setBackgroundResource(R.drawable.bg_badge_ok)
             b.statusBadge.setTextColor(Color.parseColor("#0A7A52"))
-            b.powerLabel.text = "Glissez pour éteindre"
+            // Première connexion : on part du principe que le vélo est allumé.
+            if (!sliderInit) { sliderInit = true; setPowerUi(true) }
         } else {
             b.statusBadge.setBackgroundResource(R.drawable.bg_badge_soft)
             b.statusBadge.setTextColor(Color.parseColor("#8A9796"))
             b.battPct.text = "—"
             b.rangeTxt.text = "—"
-            b.powerLabel.text = "Glissez pour allumer"
             b.batteryRing.setProgressCompat(0, false)
+            // Lien coupé pour de bon = vélo éteint.
+            sliderInit = false
+            setPowerUi(false)
         }
-        restKnob(conn)
     }
 
     private fun maxTravel(): Float =
         (b.powerTrack.width - b.powerKnob.width - dp(8)).toFloat().coerceAtLeast(0f)
 
-    /** Replace le bouton à sa position de repos selon l'état (gauche=éteint, droite=allumé). */
-    private fun restKnob(on: Boolean) {
+    /** Met le slider (bouton + libellé) sur l'état marche/arrêt voulu. */
+    private fun setPowerUi(on: Boolean) {
+        poweredUi = on
+        b.powerLabel.text = if (on) "Glissez pour éteindre" else "Glissez pour allumer"
         b.powerTrack.post {
             b.powerKnob.animate().translationX(if (on) maxTravel() else 0f).setDuration(220).start()
         }
@@ -139,11 +146,13 @@ class HomeFragment : Fragment() {
                     if (!moved) {
                         v.performClick() // simple appui → bascule
                     } else {
-                        val on = BikeHub.connected.value == true
+                        val on = poweredUi
                         val crossed = if (on) v.translationX <= max * 0.5f else v.translationX >= max * 0.5f
-                        if (crossed) togglePower()
-                        val newOn = if (crossed) !on else on
-                        v.animate().translationX(if (newOn) max else 0f).setDuration(140).start()
+                        if (crossed) {
+                            togglePower()
+                        } else {
+                            v.animate().translationX(if (on) max else 0f).setDuration(140).start()
+                        }
                     }
                     true
                 }
@@ -153,7 +162,9 @@ class HomeFragment : Fragment() {
     }
 
     private fun togglePower() {
-        if (BikeHub.connected.value == true) BikeHub.ble.powerOff() else BikeHub.ble.powerOn()
+        val target = !poweredUi
+        setPowerUi(target)                 // bascule immédiate de l'UI (plus de retour en arrière)
+        if (target) BikeHub.ble.powerOn() else BikeHub.ble.powerOff()
     }
 
     private fun renderStatus(st: BleClient.Status) {
