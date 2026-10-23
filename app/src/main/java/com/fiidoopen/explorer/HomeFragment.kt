@@ -79,10 +79,10 @@ class HomeFragment : Fragment() {
         currentMode = active
         pills.forEachIndexed { i, t ->
             if (i == active) {
-                t.background = pillBg(13, Color.parseColor(strong[i]))
+                t.background = pillBg(9, Color.parseColor(strong[i]))
                 t.setTextColor(Color.WHITE)
             } else {
-                t.background = pillBg(13, Color.parseColor(soft[i]))
+                t.background = pillBg(9, Color.parseColor(soft[i]))
                 t.setTextColor(Color.parseColor(strong[i]))
             }
         }
@@ -156,7 +156,7 @@ class HomeFragment : Fragment() {
 
         // Badge mode (coloré)
         b.modeBadge.text = names[mode]
-        b.modeBadge.background = pillBg(999, Color.parseColor(soft[mode]))
+        b.modeBadge.background = pillBg(8, Color.parseColor(soft[mode]))
         b.modeBadge.setTextColor(Color.parseColor(strong[mode]))
 
         // Autonomie estimée
