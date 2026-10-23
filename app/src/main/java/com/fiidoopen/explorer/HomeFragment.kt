@@ -98,10 +98,11 @@ class HomeFragment : Fragment() {
         } else {
             b.statusBadge.setBackgroundResource(R.drawable.bg_badge_soft)
             b.statusBadge.setTextColor(Color.parseColor("#8A9796"))
-            b.battPct.text = "— %"
-            b.rangeTxt.text = ""
+            b.battPct.text = "—"
+            b.rangeTxt.text = "—"
             b.powerTrack.setBackgroundResource(R.drawable.bg_slider)
             b.powerLabel.text = "Glisser pour allumer"
+            b.batteryRing.setProgressCompat(0, false)
         }
     }
 
@@ -144,6 +145,15 @@ class HomeFragment : Fragment() {
         b.battPct.text = "$pct %"
         highlight(mode)
 
+        // Anneau batterie (couleur selon niveau)
+        val ring = when {
+            pct > 50 -> "#12A06B"
+            pct > 20 -> "#E0912A"
+            else -> "#DD5B4C"
+        }
+        b.batteryRing.setIndicatorColor(Color.parseColor(ring))
+        b.batteryRing.setProgressCompat(pct, true)
+
         // Badge mode (coloré)
         b.modeBadge.text = names[mode]
         b.modeBadge.background = pillBg(999, Color.parseColor(soft[mode]))
@@ -152,9 +162,9 @@ class HomeFragment : Fragment() {
         // Autonomie estimée
         if (mode in 1..5) {
             val km = BikeHub.estimatedRangeKm(pct, mode).roundToInt()
-            b.rangeTxt.text = "·  $km km"
+            b.rangeTxt.text = "$km km"
         } else {
-            b.rangeTxt.text = ""
+            b.rangeTxt.text = "— km"
         }
     }
 

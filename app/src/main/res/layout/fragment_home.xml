@@ -10,122 +10,109 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingBottom="20dp">
+        android:paddingBottom="24dp">
 
         <!-- Top bar -->
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="16dp">
+
+            <ImageView
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_alignParentStart="true"
+                android:background="@drawable/bg_circle_soft"
+                android:padding="10dp"
+                android:src="@drawable/ic_bike"
+                app:tint="@color/ink"
+                android:contentDescription="Vélo" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="42dp"
+                android:layout_centerHorizontal="true"
+                android:gravity="center"
+                android:text="FIIDO"
+                android:textColor="@color/primary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.22" />
+
+            <ImageView
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_alignParentEnd="true"
+                android:background="@drawable/bg_circle_soft"
+                android:padding="10dp"
+                android:src="@drawable/ic_settings"
+                app:tint="@color/ink"
+                android:contentDescription="Réglages" />
+        </RelativeLayout>
+
+        <!-- Hero : vélo à gauche, texte à droite -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
             android:paddingHorizontal="18dp"
-            android:paddingTop="18dp">
+            android:paddingTop="14dp">
+
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_height="150dp"
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:contentDescription="Fiido C11"
+                android:scaleType="fitCenter"
+                android:src="@drawable/bike_c11" />
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:gravity="center_horizontal"
+                android:layout_weight="1.05"
+                android:layout_marginStart="10dp"
                 android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Fiido C11"
+                    android:textColor="@color/txtDim"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Prêt à rouler"
                     android:textColor="@color/txt"
-                    android:textSize="17sp"
+                    android:textSize="23sp"
                     android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Conforme à la réglementation française"
+                    android:textColor="@color/txtDim"
+                    android:textSize="12.5sp" />
 
                 <TextView
                     android:id="@+id/statusBadge"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="12dp"
                     android:background="@drawable/bg_badge_soft"
                     android:paddingHorizontal="12dp"
-                    android:paddingVertical="4dp"
+                    android:paddingVertical="5dp"
                     android:text="HORS LIGNE"
                     android:textColor="@color/txtDim"
                     android:textSize="10sp"
                     android:textStyle="bold" />
             </LinearLayout>
-        </RelativeLayout>
-
-        <!-- Hero -->
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:layout_marginTop="6dp"
-            android:background="@drawable/bg_hero">
-
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_margin="12dp"
-                android:adjustViewBounds="true"
-                android:contentDescription="Fiido C11"
-                android:scaleType="fitCenter"
-                android:src="@drawable/bike_c11" />
-        </FrameLayout>
-
-        <!-- Battery row -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingHorizontal="22dp"
-            android:paddingTop="14dp">
-
-            <TextView
-                android:id="@+id/battPct"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="— %"
-                android:textColor="@color/txt"
-                android:textSize="34sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/rangeTxt"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="12dp"
-                android:text=""
-                android:textColor="@color/ink"
-                android:textSize="15sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/modeBadge"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_badge_soft"
-                android:paddingHorizontal="13dp"
-                android:paddingVertical="6dp"
-                android:text="—"
-                android:textColor="@color/txtDim"
-                android:textSize="11sp"
-                android:textStyle="bold" />
         </LinearLayout>
-
-        <!-- Ready -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingHorizontal="22dp"
-            android:paddingTop="16dp"
-            android:text="Prêt à rouler"
-            android:textColor="@color/txt"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingHorizontal="22dp"
-            android:text="Conforme à la réglementation française"
-            android:textColor="@color/txtDim"
-            android:textSize="12sp" />
 
         <!-- Slider marche / arrêt (type BMW) -->
         <FrameLayout
@@ -133,7 +120,7 @@
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:layout_marginHorizontal="16dp"
-            android:layout_marginTop="18dp"
+            android:layout_marginTop="20dp"
             android:background="@drawable/bg_slider">
 
             <TextView
@@ -164,33 +151,151 @@
             </FrameLayout>
         </FrameLayout>
 
-        <!-- Modes label -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingHorizontal="22dp"
-            android:paddingTop="22dp"
-            android:paddingBottom="8dp"
-            android:text="MODE D'ASSISTANCE"
-            android:textColor="@color/txtDim"
-            android:textSize="10sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.12" />
-
-        <!-- Modes pills (remplis par code) -->
-        <LinearLayout
-            android:id="@+id/modesRow"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingHorizontal="16dp" />
-
-        <!-- ODO card -->
+        <!-- Carte batterie -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
-            android:layout_marginTop="18dp"
+            android:layout_marginTop="16dp"
+            app:cardBackgroundColor="@color/surface"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="18dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="BATTERIE"
+                    android:textColor="@color/txtDim"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.12" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.progressindicator.CircularProgressIndicator
+                        android:id="@+id/batteryRing"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:indeterminate="false"
+                        app:indicatorColor="@color/ok"
+                        app:trackColor="@color/surfaceAlt"
+                        app:indicatorSize="72dp"
+                        app:trackThickness="7dp"
+                        app:trackCornerRadius="6dp" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="18dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/battPct"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="—"
+                            android:textColor="@color/txt"
+                            android:textSize="28sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Chargé"
+                            android:textColor="@color/txtDim"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/rangeTxt"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="—"
+                            android:textColor="@color/txt"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Autonomie"
+                            android:textColor="@color/txtDim"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/modeBadge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_badge_soft"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="6dp"
+                        android:text="—"
+                        android:textColor="@color/txtDim"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Carte modes -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="14dp"
+            app:cardBackgroundColor="@color/surface"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="12dp"
+                    android:text="MODE D'ASSISTANCE"
+                    android:textColor="@color/txtDim"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.12" />
+
+                <LinearLayout
+                    android:id="@+id/modesRow"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Carte kilométrage -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="14dp"
             app:cardBackgroundColor="@color/surface"
             app:cardCornerRadius="20dp"
             app:cardElevation="2dp">
