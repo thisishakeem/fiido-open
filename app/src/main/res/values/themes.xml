@@ -6,5 +6,7 @@
         <item name="colorPrimary">@color/primary</item>
         <item name="colorOnPrimary">#FFFFFFFF</item>
         <item name="colorSurface">@color/surface</item>
+        <item name="android:fontFamily">@font/manrope</item>
+        <item name="fontFamily">@font/manrope</item>
     </style>
 </resources>

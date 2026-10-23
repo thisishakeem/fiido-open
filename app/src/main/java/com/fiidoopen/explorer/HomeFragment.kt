@@ -79,10 +79,10 @@ class HomeFragment : Fragment() {
         currentMode = active
         pills.forEachIndexed { i, t ->
             if (i == active) {
-                t.background = pillBg(9, Color.parseColor(strong[i]))
+                t.background = pillBg(6, Color.parseColor(strong[i]))
                 t.setTextColor(Color.WHITE)
             } else {
-                t.background = pillBg(9, Color.parseColor(soft[i]))
+                t.background = pillBg(6, Color.parseColor(soft[i]))
                 t.setTextColor(Color.parseColor(strong[i]))
             }
         }
@@ -93,23 +93,32 @@ class HomeFragment : Fragment() {
             b.statusBadge.text = "CONNECTÉ"
             b.statusBadge.setBackgroundResource(R.drawable.bg_badge_ok)
             b.statusBadge.setTextColor(Color.parseColor("#0A7A52"))
-            b.powerTrack.setBackgroundResource(R.drawable.bg_slider_on)
-            b.powerLabel.text = "Glisser pour éteindre"
+            b.powerLabel.text = "Glissez pour éteindre"
         } else {
             b.statusBadge.setBackgroundResource(R.drawable.bg_badge_soft)
             b.statusBadge.setTextColor(Color.parseColor("#8A9796"))
             b.battPct.text = "—"
             b.rangeTxt.text = "—"
-            b.powerTrack.setBackgroundResource(R.drawable.bg_slider)
-            b.powerLabel.text = "Glisser pour allumer"
+            b.powerLabel.text = "Glissez pour allumer"
             b.batteryRing.setProgressCompat(0, false)
+        }
+        restKnob(conn)
+    }
+
+    private fun maxTravel(): Float =
+        (b.powerTrack.width - b.powerKnob.width - dp(8)).toFloat().coerceAtLeast(0f)
+
+    /** Replace le bouton à sa position de repos selon l'état (gauche=éteint, droite=allumé). */
+    private fun restKnob(on: Boolean) {
+        b.powerTrack.post {
+            b.powerKnob.animate().translationX(if (on) maxTravel() else 0f).setDuration(220).start()
         }
     }
 
     private fun setupPowerSlider() {
         val knob = b.powerKnob
         knob.setOnTouchListener { v, e ->
-            val max = (b.powerTrack.width - v.width - dp(8)).toFloat().coerceAtLeast(0f)
+            val max = maxTravel()
             when (e.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
                     v.parent?.requestDisallowInterceptTouchEvent(true)
@@ -120,23 +129,25 @@ class HomeFragment : Fragment() {
                 }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     v.parent?.requestDisallowInterceptTouchEvent(false)
-                    if (max > 0 && v.translationX >= max * 0.8f) {
-                        v.animate().translationX(max).setDuration(120).withEndAction {
-                            triggerPower()
-                            v.postDelayed({ v.animate().translationX(0f).setDuration(220).start() }, 500)
-                        }.start()
+                    val on = BikeHub.connected.value == true
+                    if (!on) {
+                        // éteint → glisser vers la droite pour allumer
+                        if (max > 0 && v.translationX >= max * 0.6f) {
+                            v.animate().translationX(max).setDuration(120).start()
+                            BikeHub.ble.powerOn()
+                        } else v.animate().translationX(0f).setDuration(160).start()
                     } else {
-                        v.animate().translationX(0f).setDuration(160).start()
+                        // allumé → glisser vers la gauche pour éteindre
+                        if (max > 0 && v.translationX <= max * 0.4f) {
+                            v.animate().translationX(0f).setDuration(120).start()
+                            BikeHub.ble.powerOff()
+                        } else v.animate().translationX(max).setDuration(160).start()
                     }
                     v.performClick(); true
                 }
                 else -> false
             }
         }
-    }
-
-    private fun triggerPower() {
-        if (BikeHub.connected.value == true) BikeHub.ble.powerOff() else BikeHub.ble.powerOn()
     }
 
     private fun renderStatus(st: BleClient.Status) {
@@ -156,7 +167,7 @@ class HomeFragment : Fragment() {
 
         // Badge mode (coloré)
         b.modeBadge.text = names[mode]
-        b.modeBadge.background = pillBg(8, Color.parseColor(soft[mode]))
+        b.modeBadge.background = pillBg(6, Color.parseColor(soft[mode]))
         b.modeBadge.setTextColor(Color.parseColor(strong[mode]))
 
         // Autonomie estimée
