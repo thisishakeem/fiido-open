@@ -8,6 +8,9 @@ import android.os.Build
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import android.view.View
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.fiidoopen.explorer.databinding.ActivityMainBinding
@@ -50,21 +53,37 @@ class MainActivity : AppCompatActivity() {
         ble.knownBike = getSharedPreferences("fiido", Context.MODE_PRIVATE)
             .getString("bikeAddress", "D7:39:0E:7E:FB:0E")
 
-        b.bottomNav.setOnItemSelectedListener { item ->
-            val f: Fragment = when (item.itemId) {
-                R.id.nav_bike -> HomeFragment()
-                R.id.nav_rides -> TrajetsFragment()
-                R.id.nav_map -> CarteFragment()
-                R.id.nav_settings -> ReglagesFragment()
-                else -> HomeFragment()
-            }
-            supportFragmentManager.beginTransaction().replace(R.id.container, f).commit()
-            true
-        }
-        if (savedInstanceState == null) b.bottomNav.selectedItemId = R.id.nav_bike
+        setupDock()
+        if (savedInstanceState == null) selectTab(0)
 
         BikeHub.appendLog("Fiido Open ${BuildStamp.VERSION}")
         tryAutoConnect()
+    }
+
+    private data class DockTab(val root: View, val icon: ImageView, val label: TextView, val frag: () -> Fragment)
+    private lateinit var tabs: List<DockTab>
+
+    private fun setupDock() {
+        tabs = listOf(
+            DockTab(b.tabBike, b.tabBikeIcon, b.tabBikeLabel) { HomeFragment() },
+            DockTab(b.tabRides, b.tabRidesIcon, b.tabRidesLabel) { TrajetsFragment() },
+            DockTab(b.tabMap, b.tabMapIcon, b.tabMapLabel) { CarteFragment() },
+            DockTab(b.tabSettings, b.tabSettingsIcon, b.tabSettingsLabel) { ReglagesFragment() },
+        )
+        tabs.forEachIndexed { i, t -> t.root.setOnClickListener { selectTab(i) } }
+        b.centerBtn.setOnClickListener { selectTab(2) } // Localiser → Carte
+    }
+
+    private fun selectTab(index: Int) {
+        val active = ContextCompat.getColor(this, R.color.primary)
+        val dim = ContextCompat.getColor(this, R.color.txtDim)
+        tabs.forEachIndexed { i, t ->
+            val on = i == index
+            t.icon.setColorFilter(if (on) active else dim)
+            t.label.setTextColor(if (on) active else dim)
+        }
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.container, tabs[index].frag()).commit()
     }
 
     private fun onBleState(s: String) {

@@ -12,16 +12,65 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNav"
+    <!-- Dock custom (style Bosch) : 4 onglets + bouton central surélevé -->
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/surface"
-        app:elevation="8dp"
-        app:labelVisibilityMode="labeled"
-        app:itemIconTint="@color/nav_item"
-        app:itemTextColor="@color/nav_item"
-        app:itemActiveIndicatorStyle="@style/NavIndicator"
-        app:menu="@menu/bottom_nav" />
+        android:layout_height="74dp"
+        android:clipChildren="false"
+        android:clipToPadding="false">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="62dp"
+            android:layout_gravity="bottom"
+            android:orientation="horizontal"
+            android:background="@color/surface"
+            android:elevation="8dp"
+            android:weightSum="5">
+
+            <LinearLayout android:id="@+id/tabBike" style="@style/DockTab">
+                <ImageView android:id="@+id/tabBikeIcon" style="@style/DockIcon" android:src="@drawable/ic_bike" />
+                <TextView android:id="@+id/tabBikeLabel" style="@style/DockLabel" android:text="Vélo" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/tabRides" style="@style/DockTab">
+                <ImageView android:id="@+id/tabRidesIcon" style="@style/DockIcon" android:src="@drawable/ic_rides" />
+                <TextView android:id="@+id/tabRidesLabel" style="@style/DockLabel" android:text="Trajets" />
+            </LinearLayout>
+
+            <!-- emplacement central (bouton par-dessus) -->
+            <View android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" />
+
+            <LinearLayout android:id="@+id/tabMap" style="@style/DockTab">
+                <ImageView android:id="@+id/tabMapIcon" style="@style/DockIcon" android:src="@drawable/ic_map" />
+                <TextView android:id="@+id/tabMapLabel" style="@style/DockLabel" android:text="Carte" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/tabSettings" style="@style/DockTab">
+                <ImageView android:id="@+id/tabSettingsIcon" style="@style/DockIcon" android:src="@drawable/ic_settings" />
+                <TextView android:id="@+id/tabSettingsLabel" style="@style/DockLabel" android:text="Réglages" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Bouton central surélevé : Localiser -->
+        <FrameLayout
+            android:id="@+id/centerBtn"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_gravity="top|center_horizontal"
+            android:background="@drawable/bg_circle_dark"
+            android:elevation="10dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:contentDescription="Localiser le vélo">
+
+            <ImageView
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_locate"
+                app:tint="@color/primary" />
+        </FrameLayout>
+    </FrameLayout>
 
 </LinearLayout>
