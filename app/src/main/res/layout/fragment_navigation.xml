@@ -30,7 +30,7 @@
         android:layout_gravity="top"
         android:layout_margin="14dp"
         app:cardBackgroundColor="@color/primaryDark"
-        app:cardCornerRadius="8dp"
+        app:cardCornerRadius="0dp"
         app:cardElevation="6dp">
 
         <LinearLayout
@@ -81,7 +81,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         app:cardBackgroundColor="@color/navSheet"
-        app:cardCornerRadius="10dp"
+        app:cardCornerRadius="0dp"
         app:cardElevation="10dp">
 
         <LinearLayout

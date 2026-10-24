@@ -26,6 +26,9 @@ class ReglagesFragment : Fragment() {
         b.versionTxt.text = "Fiido Open ${BuildStamp.VERSION}"
         b.logView.movementMethod = ScrollingMovementMethod()
 
+        b.btnPowerOn.setOnClickListener { BikeHub.ble.powerOn() }
+        b.btnPowerOff.setOnClickListener { ifReady { BikeHub.ble.powerOff() } }
+
         b.devHeader.setOnClickListener {
             val show = b.devBox.visibility != View.VISIBLE
             b.devBox.visibility = if (show) View.VISIBLE else View.GONE

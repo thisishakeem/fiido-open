@@ -5,14 +5,12 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.fiidoopen.explorer.databinding.FragmentHomeBinding
-import kotlin.math.abs
 import kotlin.math.roundToInt
 
 class HomeFragment : Fragment() {
@@ -25,12 +23,6 @@ class HomeFragment : Fragment() {
     private val soft = listOf("#F0F3F3", "#E1F5EC", "#D7ECEE", "#FBEBD5", "#FBE2DF", "#EAE4FB")
 
     private val pills = mutableListOf<TextView>()
-    private var currentMode = -1
-    private var downX = 0f
-    private var startTX = 0f
-    private var moved = false
-    private var poweredUi = false      // état marche/arrêt affiché par le slider (intention)
-    private var sliderInit = false     // slider synchronisé au moins une fois
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, s: Bundle?): View {
         _b = FragmentHomeBinding.inflate(inflater, container, false)
@@ -40,7 +32,6 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, s: Bundle?) {
         buildPills()
         highlight(-1)
-        setupPowerSlider()
 
         BikeHub.connected.observe(viewLifecycleOwner) { conn -> onConnectionChanged(conn) }
         BikeHub.state.observe(viewLifecycleOwner) { st ->
@@ -66,9 +57,7 @@ class HomeFragment : Fragment() {
                 layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
                     .apply { marginStart = dp(3); marginEnd = dp(3) }
                 setOnClickListener {
-                    if (BikeHub.isReady() && BikeHub.ble.setAssist(i)) {
-                        highlight(i)
-                    }
+                    if (BikeHub.isReady() && BikeHub.ble.setAssist(i)) highlight(i)
                 }
             }
             pills.add(t)
@@ -80,91 +69,29 @@ class HomeFragment : Fragment() {
         GradientDrawable().apply { cornerRadius = dp(radius).toFloat(); setColor(color) }
 
     private fun highlight(active: Int) {
-        currentMode = active
         pills.forEachIndexed { i, t ->
             if (i == active) {
-                t.background = pillBg(6, Color.parseColor(strong[i]))
+                t.background = pillBg(0, Color.parseColor(strong[i]))
                 t.setTextColor(Color.WHITE)
             } else {
-                t.background = pillBg(6, Color.parseColor(soft[i]))
+                t.background = pillBg(0, Color.parseColor(soft[i]))
                 t.setTextColor(Color.parseColor(strong[i]))
             }
         }
     }
 
-    /** Lien Bluetooth : pilote seulement le badge + la synchro initiale du slider. */
     private fun onConnectionChanged(conn: Boolean) {
         if (conn) {
             b.statusBadge.text = "CONNECTÉ"
             b.statusBadge.setBackgroundResource(R.drawable.bg_badge_ok)
             b.statusBadge.setTextColor(Color.parseColor("#0A7A52"))
-            // Première connexion : on part du principe que le vélo est allumé.
-            if (!sliderInit) { sliderInit = true; setPowerUi(true) }
         } else {
             b.statusBadge.setBackgroundResource(R.drawable.bg_badge_soft)
             b.statusBadge.setTextColor(Color.parseColor("#8A9796"))
             b.battPct.text = "—"
             b.rangeTxt.text = "—"
             b.batteryRing.setProgressCompat(0, false)
-            // Lien coupé pour de bon = vélo éteint.
-            sliderInit = false
-            setPowerUi(false)
         }
-    }
-
-    private fun maxTravel(): Float =
-        (b.powerTrack.width - b.powerKnob.width - dp(8)).toFloat().coerceAtLeast(0f)
-
-    /** Met le slider (bouton + libellé) sur l'état marche/arrêt voulu. */
-    private fun setPowerUi(on: Boolean) {
-        poweredUi = on
-        b.powerLabel.text = if (on) "Glissez pour éteindre" else "Glissez pour allumer"
-        b.powerTrack.post {
-            b.powerKnob.animate().translationX(if (on) maxTravel() else 0f).setDuration(220).start()
-        }
-    }
-
-    private fun setupPowerSlider() {
-        val knob = b.powerKnob
-        // Appui simple = bascule (fiable sur tout appareil)
-        knob.setOnClickListener { togglePower() }
-        knob.setOnTouchListener { v, e ->
-            val max = maxTravel()
-            when (e.actionMasked) {
-                MotionEvent.ACTION_DOWN -> {
-                    v.parent?.requestDisallowInterceptTouchEvent(true)
-                    downX = e.rawX; startTX = v.translationX; moved = false; true
-                }
-                MotionEvent.ACTION_MOVE -> {
-                    val dx = e.rawX - downX
-                    if (abs(dx) > dp(6)) moved = true
-                    if (max > 0) v.translationX = (startTX + dx).coerceIn(0f, max)
-                    true
-                }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    v.parent?.requestDisallowInterceptTouchEvent(false)
-                    if (!moved) {
-                        v.performClick() // simple appui → bascule
-                    } else {
-                        val on = poweredUi
-                        val crossed = if (on) v.translationX <= max * 0.5f else v.translationX >= max * 0.5f
-                        if (crossed) {
-                            togglePower()
-                        } else {
-                            v.animate().translationX(if (on) max else 0f).setDuration(140).start()
-                        }
-                    }
-                    true
-                }
-                else -> false
-            }
-        }
-    }
-
-    private fun togglePower() {
-        val target = !poweredUi
-        setPowerUi(target)                 // bascule immédiate de l'UI (plus de retour en arrière)
-        if (target) BikeHub.ble.powerOn() else BikeHub.ble.powerOff()
     }
 
     private fun renderStatus(st: BleClient.Status) {
@@ -173,7 +100,6 @@ class HomeFragment : Fragment() {
         b.battPct.text = "$pct %"
         highlight(mode)
 
-        // Anneau batterie (couleur selon niveau)
         val ring = when {
             pct > 50 -> "#12A06B"
             pct > 20 -> "#E0912A"
@@ -182,12 +108,10 @@ class HomeFragment : Fragment() {
         b.batteryRing.setIndicatorColor(Color.parseColor(ring))
         b.batteryRing.setProgressCompat(pct, true)
 
-        // Badge mode (coloré)
         b.modeBadge.text = names[mode]
-        b.modeBadge.background = pillBg(6, Color.parseColor(soft[mode]))
+        b.modeBadge.background = pillBg(0, Color.parseColor(soft[mode]))
         b.modeBadge.setTextColor(Color.parseColor(strong[mode]))
 
-        // Autonomie estimée
         if (mode in 1..5) {
             val km = BikeHub.estimatedRangeKm(pct, mode).roundToInt()
             b.rangeTxt.text = "$km km"

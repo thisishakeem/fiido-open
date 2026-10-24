@@ -23,28 +23,25 @@
                 android:layout_width="42dp"
                 android:layout_height="42dp"
                 android:layout_alignParentStart="true"
-                android:background="@drawable/bg_circle_soft"
+                android:background="@drawable/bg_square_soft"
                 android:padding="10dp"
                 android:src="@drawable/ic_bike"
                 app:tint="@color/ink"
                 android:contentDescription="Vélo" />
 
-            <TextView
+            <ImageView
                 android:layout_width="wrap_content"
-                android:layout_height="42dp"
-                android:layout_centerHorizontal="true"
-                android:gravity="center"
-                android:text="FIIDO"
-                android:textColor="@color/primary"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.22" />
+                android:layout_height="26dp"
+                android:layout_centerInParent="true"
+                android:adjustViewBounds="true"
+                android:src="@drawable/fiido_logo"
+                android:contentDescription="Fiido" />
 
             <ImageView
                 android:layout_width="42dp"
                 android:layout_height="42dp"
                 android:layout_alignParentEnd="true"
-                android:background="@drawable/bg_circle_soft"
+                android:background="@drawable/bg_square_soft"
                 android:padding="10dp"
                 android:src="@drawable/ic_settings"
                 app:tint="@color/ink"
@@ -58,7 +55,7 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:paddingHorizontal="18dp"
-            android:paddingTop="14dp">
+            android:paddingTop="16dp">
 
             <ImageView
                 android:layout_width="0dp"
@@ -89,7 +86,7 @@
                     android:text="Prêt à rouler"
                     android:textColor="@color/txt"
                     android:textSize="23sp"
-                    android:fontFamily="@font/manrope_extrabold" />
+                    android:fontFamily="@font/boschsans_black" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -114,57 +111,15 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Slider marche / arrêt (type BMW) -->
-        <FrameLayout
-            android:id="@+id/powerTrack"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:layout_marginHorizontal="16dp"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/bg_slider">
-
-            <TextView
-                android:id="@+id/powerLabel"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:paddingStart="58dp"
-                android:paddingEnd="58dp"
-                android:shadowColor="#55000000"
-                android:shadowDx="0"
-                android:shadowDy="1"
-                android:shadowRadius="3"
-                android:text="Glissez pour allumer"
-                android:textColor="#FFFFFFFF"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <FrameLayout
-                android:id="@+id/powerKnob"
-                android:layout_width="52dp"
-                android:layout_height="52dp"
-                android:layout_gravity="start|center_vertical"
-                android:layout_marginStart="4dp"
-                android:background="@drawable/bg_knob">
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_gravity="center"
-                    android:contentDescription="Marche/arrêt"
-                    android:src="@drawable/ic_power" />
-            </FrameLayout>
-        </FrameLayout>
-
         <!-- Carte batterie -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="20dp"
             app:cardBackgroundColor="@color/surface"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="2dp">
+            app:cardCornerRadius="0dp"
+            app:cardElevation="6dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -197,7 +152,7 @@
                         app:trackColor="@color/surfaceAlt"
                         app:indicatorSize="72dp"
                         app:trackThickness="7dp"
-                        app:trackCornerRadius="6dp" />
+                        app:trackCornerRadius="0dp" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -213,7 +168,7 @@
                             android:text="—"
                             android:textColor="@color/txt"
                             android:textSize="28sp"
-                            android:fontFamily="@font/manrope_extrabold" />
+                            android:fontFamily="@font/boschsans_black" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -268,8 +223,8 @@
             android:layout_marginHorizontal="16dp"
             android:layout_marginTop="14dp"
             app:cardBackgroundColor="@color/surface"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="2dp">
+            app:cardCornerRadius="0dp"
+            app:cardElevation="6dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -302,8 +257,8 @@
             android:layout_marginHorizontal="16dp"
             android:layout_marginTop="14dp"
             app:cardBackgroundColor="@color/surface"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="2dp">
+            app:cardCornerRadius="0dp"
+            app:cardElevation="6dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -335,7 +290,7 @@
                         android:text="—"
                         android:textColor="@color/txt"
                         android:textSize="26sp"
-                        android:fontFamily="@font/manrope_extrabold" />
+                        android:fontFamily="@font/boschsans_black" />
 
                     <TextView
                         android:id="@+id/odoToday"

@@ -6,7 +6,7 @@
         <item name="colorPrimary">@color/primary</item>
         <item name="colorOnPrimary">#FFFFFFFF</item>
         <item name="colorSurface">@color/surface</item>
-        <item name="android:fontFamily">@font/manrope</item>
-        <item name="fontFamily">@font/manrope</item>
+        <item name="android:fontFamily">@font/fiido_sans</item>
+        <item name="fontFamily">@font/fiido_sans</item>
     </style>
 </resources>
