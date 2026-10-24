@@ -8,5 +8,17 @@
         <item name="colorSurface">@color/surface</item>
         <item name="android:fontFamily">@font/fiido_sans</item>
         <item name="fontFamily">@font/fiido_sans</item>
+        <item name="materialCardViewStyle">@style/CardFiido</item>
+    </style>
+
+    <style name="CardFiido" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardCornerRadius">0dp</item>
+        <item name="strokeColor">@color/line</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="cardBackgroundColor">@color/surface</item>
+    </style>
+
+    <style name="NavIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@android:color/transparent</item>
     </style>
 </resources>

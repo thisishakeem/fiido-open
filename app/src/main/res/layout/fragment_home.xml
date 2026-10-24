@@ -20,29 +20,31 @@
             android:paddingTop="16dp">
 
             <ImageView
-                android:layout_width="42dp"
-                android:layout_height="42dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:layout_alignParentStart="true"
-                android:background="@drawable/bg_square_soft"
-                android:padding="10dp"
+                android:layout_centerVertical="true"
+                android:background="@drawable/bg_circle_soft"
+                android:padding="9dp"
                 android:src="@drawable/ic_bike"
                 app:tint="@color/ink"
                 android:contentDescription="Vélo" />
 
             <ImageView
                 android:layout_width="wrap_content"
-                android:layout_height="26dp"
+                android:layout_height="19dp"
                 android:layout_centerInParent="true"
                 android:adjustViewBounds="true"
                 android:src="@drawable/fiido_logo"
                 android:contentDescription="Fiido" />
 
             <ImageView
-                android:layout_width="42dp"
-                android:layout_height="42dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:layout_alignParentEnd="true"
-                android:background="@drawable/bg_square_soft"
-                android:padding="10dp"
+                android:layout_centerVertical="true"
+                android:background="@drawable/bg_circle_soft"
+                android:padding="9dp"
                 android:src="@drawable/ic_settings"
                 app:tint="@color/ink"
                 android:contentDescription="Réglages" />
@@ -85,8 +87,8 @@
                     android:layout_height="wrap_content"
                     android:text="Prêt à rouler"
                     android:textColor="@color/txt"
-                    android:textSize="23sp"
-                    android:fontFamily="@font/boschsans_black" />
+                    android:textSize="22sp"
+                    android:fontFamily="@font/boschsans_bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -119,7 +121,7 @@
             android:layout_marginTop="20dp"
             app:cardBackgroundColor="@color/surface"
             app:cardCornerRadius="0dp"
-            app:cardElevation="6dp">
+            app:cardElevation="2dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -150,8 +152,8 @@
                         android:indeterminate="false"
                         app:indicatorColor="@color/ok"
                         app:trackColor="@color/surfaceAlt"
-                        app:indicatorSize="72dp"
-                        app:trackThickness="7dp"
+                        app:indicatorSize="56dp"
+                        app:trackThickness="6dp"
                         app:trackCornerRadius="0dp" />
 
                     <LinearLayout
@@ -167,8 +169,8 @@
                             android:layout_height="wrap_content"
                             android:text="—"
                             android:textColor="@color/txt"
-                            android:textSize="28sp"
-                            android:fontFamily="@font/boschsans_black" />
+                            android:textSize="24sp"
+                            android:fontFamily="@font/boschsans_bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -190,8 +192,8 @@
                             android:layout_height="wrap_content"
                             android:text="—"
                             android:textColor="@color/txt"
-                            android:textSize="20sp"
-                            android:textStyle="bold" />
+                            android:textSize="24sp"
+                            android:fontFamily="@font/boschsans_bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -224,7 +226,7 @@
             android:layout_marginTop="14dp"
             app:cardBackgroundColor="@color/surface"
             app:cardCornerRadius="0dp"
-            app:cardElevation="6dp">
+            app:cardElevation="2dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -258,7 +260,7 @@
             android:layout_marginTop="14dp"
             app:cardBackgroundColor="@color/surface"
             app:cardCornerRadius="0dp"
-            app:cardElevation="6dp">
+            app:cardElevation="2dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -289,8 +291,8 @@
                         android:layout_weight="1"
                         android:text="—"
                         android:textColor="@color/txt"
-                        android:textSize="26sp"
-                        android:fontFamily="@font/boschsans_black" />
+                        android:textSize="24sp"
+                        android:fontFamily="@font/boschsans_bold" />
 
                     <TextView
                         android:id="@+id/odoToday"

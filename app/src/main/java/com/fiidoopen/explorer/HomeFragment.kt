@@ -97,7 +97,7 @@ class HomeFragment : Fragment() {
     private fun renderStatus(st: BleClient.Status) {
         val pct = st.batteryPct.coerceIn(0, 100)
         val mode = st.assist.coerceIn(0, 5)
-        b.battPct.text = "$pct %"
+        b.battPct.text = "$pct%"
         highlight(mode)
 
         val ring = when {

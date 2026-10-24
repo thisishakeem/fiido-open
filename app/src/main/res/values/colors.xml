@@ -1,15 +1,15 @@
 <resources>
-    <!-- Palette claire (design Flow / identité Fiido teal) -->
-    <color name="bg">#FFFBFCFC</color>
+    <!-- Neutres réellement neutres (plus de cast teal) -->
+    <color name="bg">#FFF4F4F5</color>
     <color name="surface">#FFFFFFFF</color>
-    <color name="surfaceAlt">#FFF0F3F3</color>
+    <color name="surfaceAlt">#FFEDEDEE</color>
     <color name="primary">#FF0C7B88</color>
     <color name="primaryDark">#FF0A5E68</color>
     <color name="primaryCont">#FFD4EEF0</color>
-    <color name="ink">#FF073238</color>
-    <color name="txt">#FF0E1A1A</color>
-    <color name="txtDim">#FF8A9796</color>
-    <color name="line">#FFEDF1F1</color>
+    <color name="ink">#FF11151A</color>
+    <color name="txt">#FF11151A</color>
+    <color name="txtDim">#FF8A8E94</color>
+    <color name="line">#FFE4E4E7</color>
     <color name="ok">#FF12A06B</color>
 
     <!-- Couleurs des modes d'assistance -->
